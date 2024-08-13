@@ -16,7 +16,6 @@ import {useCytoscapeManager} from "@/hooks/useCytoscapeManager";
 
 
 export default function DashboardLayout() {
-    const emptyGraphData = {nodes: new Array<NodeDataType>, edges: new Array<EdgeDataType>}
     const [selectedElement, setSelectedElement] = useState<NodeDataType | undefined>();
     const [isLoading, setIsLoading] = useState(false);
     const {graphData, expandNodeData, removeNodeData, loadGraphData} = useGraphDataManager(setIsLoading)
