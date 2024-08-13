@@ -2,15 +2,33 @@ import React from 'react';
 import {Button, Stack} from "@mui/material";
 import styles from './DashboardHeader.module.scss'
 import {LoadDataPopup} from "@/components/LoadDataPopup/LoadDataPopup";
+import {CytoscapeManagerType} from "@/types/CytoscapeManagerType";
 
-export function DashboardHeader() {
-    const [isOpen, setLoadDataPopupOpen] = React.useState(false);
+type Props = {
+    onSubmitLoadDataPopup: (nodeIds: Array<string>) => Promise<void>
+    cytoscapeManager: CytoscapeManagerType,
+};
+export function DashboardHeader(props:Props) {
+
+    const [isLoadDataPopupOpen, setLoadDataPopupOpen] = React.useState(false);
 
     return (
-        <Stack direction="row" spacing={2} justifyContent="space-between" className={styles.DashboardHeader}>
+        <Stack direction="row" justifyContent="space-between" className={styles.DashboardHeader}>
             <span className={styles.logo}> AMLVis </span>
-            <Button variant="outlined" onClick={() => setLoadDataPopupOpen(true)}>Load data</Button>
-            <LoadDataPopup onClose={() => setLoadDataPopupOpen(false)} isOpen={isOpen}></LoadDataPopup>
+            <Stack direction="row" spacing={2} justifyContent="">
+                <Button variant="outlined" onClick={() => {
+                    const layout = props.cytoscapeManager.layout
+                    props.cytoscapeManager.ref.current?.layout(layout).run()
+                }}>Rerun layout</Button>
+                <Button variant="outlined" onClick={() => {
+                    props.cytoscapeManager.ref.current?.fit()
+                }}>Center on Graph</Button>
+                <Button variant="outlined" onClick={() => setLoadDataPopupOpen(true)}>Load data</Button>
+                <LoadDataPopup
+                    onSubmit={props.onSubmitLoadDataPopup}
+                    isOpen={isLoadDataPopupOpen}
+                    setOpen={setLoadDataPopupOpen}></LoadDataPopup>
+            </Stack>
         </Stack>
     );
 }

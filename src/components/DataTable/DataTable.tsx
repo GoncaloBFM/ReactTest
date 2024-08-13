@@ -1,36 +1,43 @@
-import React, {useState} from 'react';
+import React, {SetStateAction, useEffect, useState} from 'react';
 import styles from './DataTable.module.scss'
-import { PlottingData } from '@/hooks/usePlottingData';
 import { AgGridReact } from 'ag-grid-react'; // React Data Grid Component
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
+import { DataGrid} from '@mui/x-data-grid';
+import {NodeDataType} from "@/types/NodeDataType";
+import {GraphData} from "@/types/GraphData";
 
 type Props = {
-    data: PlottingData,
+    setSelectedElement: SetStateAction<any>
+    selectedElement: NodeDataType | undefined
+    graphData: GraphData,
 };
 
 export function DataTable(props: Props) {
     // Row Data: The data to be displayed.
-    const [rowData, setRowData] = useState([
-        { make: "Tesla", model: "Model Y", price: 64950, electric: true },
-        { make: "Ford", model: "F-Series", price: 33850, electric: false },
-        { make: "Toyota", model: "Corolla", price: 29600, electric: false },
-    ]);
-
-    // Column Definitions: Defines the columns to be displayed.
-    const [colDefs, setColDefs] = useState([
-        { field: "make" },
-        { field: "model" },
-        { field: "price" },
-        { field: "electric" }
-    ]);
-
     return (
-        <div className={`ag-theme-quartz ${styles.DataTable}`}>
-            <AgGridReact
-                rowData={rowData}
-                columnDefs={colDefs}
-            />test
+        <div className={styles.DataTable}>
+            <DataGrid
+                rowSelectionModel={props.selectedElement?.id || new Array<string>()}
+                rows={props.graphData.nodes}
+                columns={
+                    ['id', 'name', 'country', 'address', 'birthDate', 'type'].map(
+                        (header: string) => {
+                            return {field: header, headerName: header, flex: 1}
+                        })}
+                onRowSelectionModelChange={(ids) => {
+                    if (ids.length) {
+                        props.setSelectedElement(props.graphData.nodes.filter(node => node.id == ids[0].toString())[0])
+                    } else {
+                        props.setSelectedElement(undefined)
+                    }
+                }}
+                initialState={{
+                    pagination: {
+                        paginationModel: {page: 0},
+                    },
+                }}
+            />
         </div>
     )
 }

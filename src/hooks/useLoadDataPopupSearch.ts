@@ -1,35 +1,26 @@
-import { useMemo, useState } from "react";
+import {SetStateAction, useMemo, useState} from "react";
+import {SERVER_URL} from "@/app/definitions";
+import * as React from "react";
+import {GridApi} from '@mui/x-data-grid';
 
-function delayMs(ms: number) {
-    return new Promise((res, err) => {
-        setTimeout(() => res(null), ms);
-    })
-}
 
-const emptyTableData = {rowData:[], columnDefinitions:[]}
+export function useLoadDataPopupSearch(setTableData: SetStateAction<any>) {
 
-export function useLoadDataPopupSearch() {
-
-    const [tableData, setTableData] = useState(emptyTableData);
     const [isLoading, setIsLoading] = useState(false);
 
-    const getLoadDataPopupSearchResult = useMemo(() => {
-        return async (account_id: string) => {
+    const doLoadDataPopupSearch = useMemo(() => {
+        return async (personName: string) => {
             setIsLoading(true);
-
-            fetch('')
-                .then(response => console.log(response.json()))
-                .then(data => console.log(data));
-
-            setTableData(emptyTableData)
+            const response = await fetch(`${SERVER_URL}/person/${personName}`)
+            const nodesData = await response.json();
+            setTableData(nodesData)
             setIsLoading(false);
         };
-    }, []);
+    }, [setTableData]);
 
     return {
         isLoading,
-        tableData: isLoading ? emptyTableData : tableData,
-        getLoadDataPopupSearchResult,
+        doLoadDataPopupSearch,
     };
 
 }
