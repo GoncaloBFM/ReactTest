@@ -12,8 +12,8 @@ export function useGraphDataManager(setIsLoading: SetStateAction<any>) {
     const expandNodeData = useMemo(() => {
         return async (node_id: string) => {
             setIsLoading(true);
-            const response = await fetch(`${SERVER_URL}/neighbors/${node_id}`)
-            const [neighborNodes, neighborEdges] = await response.json();
+            //const response = await fetch(`${SERVER_URL}/neighbors/${node_id}`)
+            //const [neighborNodes, neighborEdges] = await response.json();
             const newNodes = neighborNodes.concat(graphData.nodes.filter((a:SingleNode) => !neighborNodes.find((b:SingleNode) => b.id === a.id)));
             const newEdges = neighborEdges.concat(graphData.edges.filter((a:GraphEdge) => !neighborEdges.find((b:GraphEdge) => b.id === a.id)));
             setGraphData({
