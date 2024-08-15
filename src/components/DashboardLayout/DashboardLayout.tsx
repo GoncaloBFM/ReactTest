@@ -9,14 +9,14 @@ import { LoadingSpinner } from "../LoadingSpinner/LoadingSpinner";
 import {SERVER_URL} from "@/app/definitions";
 import {useGraphDataManager} from "@/hooks/useGraphDataManager";
 import cytoscape from "cytoscape";
-import {NodeDataType} from "@/types/NodeDataType";
-import {EdgeDataType} from "@/types/EdgeDataType";
+import {SingleNode} from "@/types/SingleNode";
+import {GraphEdge} from "@/types/GraphEdge";
 import {COSE} from "@/components/GraphVisualization/CytoscapeLayouts";
 import {useCytoscapeManager} from "@/hooks/useCytoscapeManager";
 
 
 export default function DashboardLayout() {
-    const [selectedElement, setSelectedElement] = useState<NodeDataType | undefined>();
+    const [selectedElement, setSelectedElement] = useState<SingleNode | undefined>();
     const [isLoading, setIsLoading] = useState(false);
     const {graphData, expandNodeData, removeNodeData, loadGraphData} = useGraphDataManager(setIsLoading)
     const cytoscapeManager = useCytoscapeManager(COSE)

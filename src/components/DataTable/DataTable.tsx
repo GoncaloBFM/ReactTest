@@ -4,13 +4,13 @@ import { AgGridReact } from 'ag-grid-react'; // React Data Grid Component
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
 import { DataGrid} from '@mui/x-data-grid';
-import {NodeDataType} from "@/types/NodeDataType";
-import {GraphData} from "@/types/GraphData";
+import {SingleNode} from "@/types/SingleNode";
+import {Graph} from "@/types/Graph";
 
 type Props = {
     setSelectedElement: SetStateAction<any>
-    selectedElement: NodeDataType | undefined
-    graphData: GraphData,
+    selectedElement: SingleNode | undefined
+    graphData: Graph,
 };
 
 export function DataTable(props: Props) {

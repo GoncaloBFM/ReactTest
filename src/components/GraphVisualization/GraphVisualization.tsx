@@ -8,18 +8,18 @@ import cytoscape, {Core} from 'cytoscape';
 import COSEBilkent from 'cytoscape-cose-bilkent';
 // @ts-ignore
 import cxtmenu from 'cytoscape-cxtmenu';
-import {CytoscapeManagerType} from "@/types/CytoscapeManagerType";
-import {NodeDataType} from "@/types/NodeDataType";
-import {GraphData} from "@/types/GraphData";
-import {EdgeDataType} from "@/types/EdgeDataType";
+import {CytoscapeManager} from "@/types/CytoscapeManager";
+import {SingleNode} from "@/types/SingleNode";
+import {Graph} from "@/types/Graph";
+import {GraphEdge} from "@/types/GraphEdge";
 
 cytoscape.use(COSEBilkent);
 
 type Props = {
-    graphData: GraphData,
+    graphData: Graph,
     setSelectedElement: SetStateAction<any>,
-    selectedElement: NodeDataType | undefined,
-    manager: CytoscapeManagerType
+    selectedElement: SingleNode | undefined,
+    manager: CytoscapeManager
 };
 
 export function GraphVisualization(props: Props) {
@@ -39,6 +39,7 @@ export function GraphVisualization(props: Props) {
         })
 
         ref.current?.on('click', 'node', (e:any)=> {props.setSelectedElement(e.target.data())})
+        //TODO: this might run everytime
     })
 
 
@@ -53,7 +54,7 @@ export function GraphVisualization(props: Props) {
 
 
     const createCytoscapeGraph = useMemo(() => {
-        return (graphData: GraphData) => {
+        return (graphData: Graph) => {
             const cytoscapeNodes = graphData.nodes.map(createCytoscapeNode);
             const cytoscapeEdges = graphData.edges.map(createCytoscapeEdge)
             return [...cytoscapeNodes, ...cytoscapeEdges]
@@ -61,11 +62,11 @@ export function GraphVisualization(props: Props) {
     }, []);
 
 
-    const createCytoscapeNode = (nodeData: NodeDataType) => {
+    const createCytoscapeNode = (nodeData: SingleNode) => {
         return {data: nodeData}
     }
 
-    const createCytoscapeEdge = (edgeData: EdgeDataType) => {
+    const createCytoscapeEdge = (edgeData: GraphEdge) => {
         return {data: edgeData}
     }
 

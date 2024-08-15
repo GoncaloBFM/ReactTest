@@ -2,11 +2,11 @@ import React from 'react';
 import {Button, Stack} from "@mui/material";
 import styles from './DashboardHeader.module.scss'
 import {LoadDataPopup} from "@/components/LoadDataPopup/LoadDataPopup";
-import {CytoscapeManagerType} from "@/types/CytoscapeManagerType";
+import {CytoscapeManager} from "@/types/CytoscapeManager";
 
 type Props = {
     onSubmitLoadDataPopup: (nodeIds: Array<string>) => Promise<void>
-    cytoscapeManager: CytoscapeManagerType,
+    cytoscapeManager: CytoscapeManager,
 };
 export function DashboardHeader(props:Props) {
 

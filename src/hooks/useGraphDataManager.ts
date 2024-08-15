@@ -1,21 +1,21 @@
 import {SetStateAction, useMemo, useState} from "react";
 import {SERVER_URL} from "@/app/definitions";
-import {GraphData} from "@/types/GraphData";
-import {EdgeDataType} from "@/types/EdgeDataType";
-import {NodeDataType} from "@/types/NodeDataType";
+import {Graph} from "@/types/Graph";
+import {GraphEdge} from "@/types/GraphEdge";
+import {SingleNode} from "@/types/SingleNode";
 
 
 export function useGraphDataManager(setIsLoading: SetStateAction<any>) {
 
-    const [graphData, setGraphData] = useState(new GraphData());
+    const [graphData, setGraphData] = useState(new Graph());
 
     const expandNodeData = useMemo(() => {
         return async (node_id: string) => {
             setIsLoading(true);
             const response = await fetch(`${SERVER_URL}/neighbors/${node_id}`)
             const [neighborNodes, neighborEdges] = await response.json();
-            const newNodes = neighborNodes.concat(graphData.nodes.filter((a:NodeDataType) => !neighborNodes.find((b:NodeDataType) => b.id === a.id)));
-            const newEdges = neighborEdges.concat(graphData.edges.filter((a:EdgeDataType) => !neighborEdges.find((b:EdgeDataType) => b.id === a.id)));
+            const newNodes = neighborNodes.concat(graphData.nodes.filter((a:SingleNode) => !neighborNodes.find((b:SingleNode) => b.id === a.id)));
+            const newEdges = neighborEdges.concat(graphData.edges.filter((a:GraphEdge) => !neighborEdges.find((b:GraphEdge) => b.id === a.id)));
             setGraphData({
                 nodes: newNodes,
                 edges: newEdges
@@ -25,8 +25,8 @@ export function useGraphDataManager(setIsLoading: SetStateAction<any>) {
     }, [setGraphData, graphData, setIsLoading]);
 
     const removeNodeData = (node_ids: Array<string>) => {
-        const newNodes = graphData.nodes.filter((node:NodeDataType) => !node_ids.includes(node.id))
-        const newEdges = graphData.edges.filter((edge:EdgeDataType) => !node_ids.includes(edge.origin) && !node_ids.includes(edge.target))
+        const newNodes = graphData.nodes.filter((node:SingleNode) => !node_ids.includes(node.id))
+        const newEdges = graphData.edges.filter((edge:GraphEdge) => !node_ids.includes(edge.origin) && !node_ids.includes(edge.target))
         setGraphData({
             nodes: newNodes,
             edges: newEdges

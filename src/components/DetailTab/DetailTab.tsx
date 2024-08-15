@@ -3,10 +3,10 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import {Button} from "@mui/material";
-import {NodeDataType} from "@/types/NodeDataType";
+import {SingleNode} from "@/types/SingleNode";
 
 type Props = {
-    selectedElement: NodeDataType | undefined
+    selectedElement: SingleNode | undefined
     expandNodeData: (node_id: string) => void
     removeNodeData: (node_ids: Array<string>) => void
 };
