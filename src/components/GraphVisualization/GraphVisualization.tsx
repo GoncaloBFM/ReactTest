@@ -1,154 +1,81 @@
-import React, {MutableRefObject, Ref, SetStateAction, useEffect, useMemo, useRef, useState} from 'react';
+import React, { MutableRefObject, Ref, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import styles from './GraphVisualization.module.scss';
-import {SERVER_URL} from "@/app/definitions";
-import {node} from "prop-types";
-import cytoscape, {Core} from 'cytoscape';
+import { SERVER_URL } from "@/app/definitions";
+import { node } from "prop-types";
+import cytoscape, { Core } from 'cytoscape';
 // @ts-ignore
 import COSEBilkent from 'cytoscape-cose-bilkent';
 // @ts-ignore
 import cxtmenu from 'cytoscape-cxtmenu';
-import {CytoscapeManager} from "@/types/CytoscapeManager";
-import {SingleNode} from "@/types/SingleNode";
-import {Graph} from "@/types/Graph";
-import {GraphEdge} from "@/types/GraphEdge";
+import { SingleNode } from "@/types/SingleNode";
+import { Graph } from "@/types/Graph";
+import { GraphEdge } from "@/types/GraphEdge";
+import { GraphNode } from '@/types/GraphNode';
+import { stylesheet } from './stylesheet';
+import { CytoscapeManager } from '@/hooks/useCytoscapeManager';
 
 cytoscape.use(COSEBilkent);
 
+type GraphData = {
+  nodes: GraphNode[],
+  edges: GraphEdge[],
+}
+
 type Props = {
-    graphData: Graph,
-    setSelectedElement: SetStateAction<any>,
-    selectedElement: SingleNode | undefined,
-    manager: CytoscapeManager
+  graphData: GraphData,
+  onSelectElement: SetStateAction<any>,
+  manager: CytoscapeManager
 };
 
 export function GraphVisualization(props: Props) {
 
-    const ref = props.manager.ref
+  const cy = props.manager.cy;
+  const onSelectElement = props.onSelectElement;
 
-    useEffect(() =>
-        {ref.current?.layout(props.manager.layout).run();},
-        [props.graphData, props.manager.layout, ref]
-    );
+  useEffect(() => {
+    console.log("<GraphVisualization /> useEffect() -- resetting cy handlers")
+    const stale = cy;
+    if (stale == null)
+      return;
 
-    useEffect( () => {
-        ref.current?.on('tap', (e:any) => {
-            if (e.target === ref.current) {
-                props.setSelectedElement(undefined);
-            }
-        })
+    const tapHandler = (e: any) => {
+      if (e.target === stale) {
+        onSelectElement(undefined);
+      }
+    };
 
-        ref.current?.on('click', 'node', (e:any)=> {props.setSelectedElement(e.target.data())})
-        //TODO: this might run everytime
-    })
+    const clickHandler = (e: any) => {
+      onSelectElement(e.target.data())
+    };
 
+    stale.on('tap', tapHandler);
+    stale.on('click', 'node', clickHandler);
 
-    useEffect(() => {
-        if (props.selectedElement) {
-            ref.current?.elements().deselect();
-            ref.current?.elements(`node[id="${props.selectedElement.id}"]`).select();
-        } else {
-            ref.current?.elements().deselect();
-        }
-    }, [props.selectedElement]);
-
-
-    const createCytoscapeGraph = useMemo(() => {
-        return (graphData: Graph) => {
-            const cytoscapeNodes = graphData.nodes.map(createCytoscapeNode);
-            const cytoscapeEdges = graphData.edges.map(createCytoscapeEdge)
-            return [...cytoscapeNodes, ...cytoscapeEdges]
-        }
-    }, []);
-
-
-    const createCytoscapeNode = (nodeData: SingleNode) => {
-        return {data: nodeData}
+    // clean up
+    () => {
+      stale.off('tap', tapHandler);
+      stale.off('click', 'node', clickHandler);
     }
+  }, [cy, onSelectElement])
 
-    const createCytoscapeEdge = (edgeData: GraphEdge) => {
-        return {data: edgeData}
-    }
 
-    const stylesheet:any = [
-        {
-            selector: 'core',
-            style: {
-                'selection-box-opacity':0,
-                'active-bg-opacity':0,
-            }
-        }, {
-            selector: 'node',
-            style: {
-                'overlay-opacity':0,
-                shape:'ellipse',
-                width:10,
-                height:10,
-            }
-        }, {
-            selector: 'edge',
-            style: {
-                'overlay-opacity':0,
-                'font-size': 3,
-                'curve-style': 'bezier',
-                'edge-text-rotation': 'autorotate',
-                "text-margin-x": "0px",
-                "text-margin-y": "0px",
-                'text-background-opacity': 1,
-                'text-background-color': '#ddd',
-                'text-background-shape': 'round-rectangle'
-            }
-        }, {
-            selector: 'node[type="person"]',
-            style: {
-                'background-color': '#922',
-                label: 'data(name)',
-                'font-size': 3
-            }
-        }, {
-            selector: 'node[type="account"]',
-            style: {
-                'background-color': '#292',
-                label: 'data(id)',
-                'font-size': 3
-            }
-        }, {
-            selector: 'edge[type="transaction"]',
-            style: {
-                label: 'data(type)',
-                'target-arrow-shape': 'triangle',
-                'width': 1,
-                'line-color': '#000',
-                'target-arrow-color': '#000',
-                'source-arrow-color': '#000',
-                'arrow-scale': 0.3,
-            }
-        }, {
-            selector: 'edge[type="connection"]',
-            style: {
-                label: 'data(type)',
-                'width': 2,
-                'line-color': '#777',
-                'line-style': 'dashed'
-            }
-        }, {
-            selector: ':selected',
-            css: {
-                'background-color': 'SteelBlue',
-                'line-color': 'black',
-                'target-arrow-color': 'black',
-                'source-arrow-color': 'black'
-            }
-        }
-    ]
-    
-    return <CytoscapeComponent
-        elements={createCytoscapeGraph(props.graphData)}
-        layout={props.manager.layout}
-        className={styles.GraphVisualization}
-        cy={(cy) => {ref.current = cy;}}
-        zoom={2}
-        stylesheet={stylesheet}
-    />;
+  const cytoscapeGraph = useMemo(() => [
+    ...props.graphData.nodes.map(e => ({ data: { ...e.data, ...e } })),
+    ...props.graphData.edges.map(e => ({ data: { ...e.data, ...e } })),
+  ], [props.graphData]);
+
+  console.log("<CytoscapeManager/>", { cytoscapeGraph });
+
+  return <>
+    <CytoscapeComponent
+      elements={cytoscapeGraph}
+      layout={props.manager.layout}
+      className={styles.GraphVisualization}
+      cy={(cy) => props.manager.setCy(cy)}
+      zoom={2}
+      stylesheet={stylesheet as any}
+    />
+  </>;
 
 }
