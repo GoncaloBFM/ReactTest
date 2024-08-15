@@ -1,8 +1,18 @@
 .DashboardLayout {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 60px 1fr;
+  overflow: hidden;
 
-  .plot,
-  .plotTable,
-  .tabbedVisualization {
-    height: 50vh;
+  .header{
+  }
+  .Visualizations{
+    overflow: auto;
+    .top{
+      height: 70%;
+    }
+    .bottom {
+      height: 30%;
+    }
   }
 }
