@@ -36,8 +36,9 @@ export function useGraphDataManager(setIsLoading: SetStateAction<any>) {
     const loadGraphData = useMemo(() => {
         return async (node_ids: string[]) => {
             setIsLoading(true);
-            const response = await fetch(`${SERVER_URL}/graph/${node_ids.join(',')}`)
-            const [rawNodes, rawEdges] = await response.json();
+            //const response = await fetch(`${SERVER_URL}/graph/${node_ids.join(',')}`)
+            //const [rawNodes, rawEdges] = await response.json();
+            const [rawNodes, rawEdges] = [[{"country": "Israel", "address": "90576 Sharon Cove", "name": "Melissa Snyder", "id": "p1", "type": "person", "birthDate": "1941-05-27"}, {"country": "Reunion", "address": "2302 Tina Streets Suite 530", "name": "James Knight", "id": "p2", "type": "person", "birthDate": "1927-09-25"}], []]
             setGraphData({
                 nodes: rawNodes,
                 edges: rawEdges
