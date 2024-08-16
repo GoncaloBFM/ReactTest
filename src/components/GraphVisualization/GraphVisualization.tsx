@@ -1,22 +1,14 @@
-import React, { MutableRefObject, Ref, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import styles from './GraphVisualization.module.scss';
-import { SERVER_URL } from "@/app/definitions";
-import { node } from "prop-types";
-import cytoscape, { Core } from 'cytoscape';
-// @ts-ignore
+import cytoscape from 'cytoscape';
+//@ts-ignore
 import COSEBilkent from 'cytoscape-cose-bilkent';
-// @ts-ignore
-import cxtmenu from 'cytoscape-cxtmenu';
-import { SingleNode } from "@/types/SingleNode";
-import { Graph } from "@/types/Graph";
-import { GraphEdge } from "@/types/GraphEdge";
-import { GraphNode } from '@/types/GraphNode';
 import { stylesheet } from './stylesheet';
 import { selectGraphView, setSelectedNodes } from '@/lib/features/graphView/graphViewSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { GraphVisualizationContext } from './GraphVisualizationProvider';
 import { loadData } from '@/lib/features/graphData/graphDataSlice';
+import { GraphVisualizationContext } from './GraphVisualizationProvider';
 
 cytoscape.use(COSEBilkent);
 

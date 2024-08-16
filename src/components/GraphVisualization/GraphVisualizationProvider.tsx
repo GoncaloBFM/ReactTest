@@ -30,17 +30,3 @@ export function GraphVisualizationProvider(props: React.PropsWithChildren) {
     </GraphVisualizationContext.Provider>
   );
 }
-
-export function useGraphVisualizationControl() {
-  const [cy, setCy] = useState<cytoscape.Core | null>(null);
-
-  return {
-    cy,
-    setCy: useCallback((next: cytoscape.Core) => {
-      if (cy !== next) {
-        console.warn('Resetting Cy', { cy, next });
-        setCy(next);
-      }
-    }, [cy]),
-  } as const;
-}

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import styles from './DashboardLayout.module.scss'
 import { Grid } from "@mui/material";
 import { DetailTab } from "@/components/DetailTab/DetailTab";
@@ -6,25 +6,20 @@ import { DashboardHeader } from "../DashboardHeader/DashboardHeader";
 import { GraphVisualization } from "@/components/GraphVisualization/GraphVisualization";
 import { DataTable } from "@/components/DataTable/DataTable";
 import { LoadingSpinner } from "../LoadingSpinner/LoadingSpinner";
-import { SERVER_URL } from "@/app/definitions";
-import { useGraphDataManager } from "@/hooks/useGraphDataManager";
-import cytoscape from "cytoscape";
-import { SingleNode } from "@/types/SingleNode";
-import { GraphEdge } from "@/types/GraphEdge";
 import { GraphVisualizationProvider } from "../GraphVisualization/GraphVisualizationProvider";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { hideNode, selectGraphView, selectSelectedNodes } from "@/lib/features/graphView/graphViewSlice";
+import { hideNode, selectGraphView, selectSelectedNodes, setSelectedNodes } from "@/lib/features/graphView/graphViewSlice";
 import { expandNode, selectGraphDataIsLoading } from "@/lib/features/graphData/graphDataSlice";
 
 
 export default function DashboardLayout() {
-  const [selectedElement, setSelectedElement] = useState<SingleNode | undefined>();
-
   const dispatch = useAppDispatch();
 
   const graphView = useAppSelector(state => selectGraphView(state));
   const selectedNodes = useAppSelector(state => selectSelectedNodes(state));
   const isLoading = useAppSelector(selectGraphDataIsLoading);
+
+  const selectedIds = useMemo(() => selectedNodes.map(e => e.id), [selectedNodes]);
 
   return (
     <GraphVisualizationProvider>
@@ -48,13 +43,13 @@ export default function DashboardLayout() {
           </Grid>
           <div className={styles.bottom}>
             <DataTable
-              graphData={graphView}
-              selectedElement={selectedElement}
-              setSelectedElement={setSelectedElement}
+              data={graphView.nodes}
+              selectedIds={selectedIds}
+              onSelectElements={ids => dispatch(setSelectedNodes(ids))}
             />
           </div>
         </div>
       </div>
-    </GraphVisualizationProvider>
+    </GraphVisualizationProvider >
   );
 }

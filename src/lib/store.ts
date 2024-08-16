@@ -1,7 +1,5 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit";
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
-import { counterSlice } from "./features/counter/counterSlice";
-import { quotesApiSlice } from "./features/quotes/quotesApiSlice";
 import { graphDataSlice } from "./features/graphData/graphDataSlice";
 import { graphViewSlice } from "./features/graphView/graphViewSlice";
 import { aggregateNodesSlice } from "./features/aggregatedNodes/aggregatedNodesSlice";
@@ -12,9 +10,6 @@ const rootReducer = combineSlices(
   graphDataSlice,
   aggregateNodesSlice,
   graphViewSlice,
-
-  counterSlice,
-  quotesApiSlice
 );
 
 // Infer the `RootState` type from the root reducer
@@ -30,7 +25,7 @@ export const makeStore = () => {
     // Adding the api middleware enables caching, invalidation, polling,
     // and other useful features of `rtk-query`.
     middleware: (getDefaultMiddleware) => {
-      return getDefaultMiddleware().concat(quotesApiSlice.middleware);
+      return getDefaultMiddleware();
     },
   });
 };
