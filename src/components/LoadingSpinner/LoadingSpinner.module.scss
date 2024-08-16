@@ -1,11 +1,12 @@
-.LoadingSpinner{
+.LoadingSpinner {
+  opacity: 0.6;
   height: 100%;
   width: 100%;
   z-index: 999999;
   position: absolute;
-  background-color: white;
-  top:0;
-  left:0;
+  background-color: lightgray;
+  top: 0;
+  left: 0;
   text-align: center;
   align-content: center;
 }
