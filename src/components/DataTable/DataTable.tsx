@@ -78,6 +78,7 @@ export function DataTable(props: Props<string>) {
           id: key,
           accessorKey: `data.${key}`,
           header: key,
+          //footer: key,
           filterVariant: 'autocomplete',
         }) as const),
     ],
@@ -128,6 +129,23 @@ export function DataTable(props: Props<string>) {
       shape: 'rounded',
       variant: 'outlined',
     },
+
+    enableTableFooter: false,
+    enableStickyHeader: true,
+    enableStickyFooter: false,
+    enableBottomToolbar: false,
+    muiTableContainerProps: {
+      sx: {
+        maxHeight: 'calc(100% - 56px)',
+      },
+    },
+
+    muiTablePaperProps: {
+      sx: {
+        height: '100%',
+      },
+    },
+
 
     getRowId: (e) => e.id,
 
