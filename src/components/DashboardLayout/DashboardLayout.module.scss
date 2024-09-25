@@ -1,18 +1,21 @@
 .DashboardLayout {
   height: 100vh;
   display: grid;
-  grid-template-rows: 60px 1fr;
+  grid-template-rows: 65px 1fr;
   overflow: hidden;
 
   .header{
   }
-  .Visualizations{
+  .detailTab {
+    height: 100%
+  }
+  .visualizations{
     overflow: auto;
     .top{
-      height: 70%;
+      height: 65%;
     }
     .bottom {
-      height: 30%;
+      height: 35%;
     }
   }
 }

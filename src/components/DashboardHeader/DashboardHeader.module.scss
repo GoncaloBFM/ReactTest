@@ -1,6 +1,15 @@
 .DashboardHeader{
+  padding: 5px;
   .logo{
     margin: 10px;
     align-content: center;
+  }
+
+  .dataPicker{
+    width: 170px;
+  }
+
+  .currencyBehaviorDropDown{
+    width: 74px;
   }
 }

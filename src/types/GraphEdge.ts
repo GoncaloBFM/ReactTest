@@ -1,10 +1,11 @@
-import { CompoundEdge } from "@/types/CompoundEdge";
-import { SingleEdgeType } from "@/types/SingleEdgeType";
 import { GraphElement } from "@/types/GraphElement";
+import {EdgeType} from "@/types/EdgeType";
 
-export interface GraphEdge extends GraphElement {
+export type EdgeMetadata = Omit<GraphEdge, 'data'>
+
+export interface GraphEdge extends GraphElement{
   source: string
   target: string
-
-  data: Record<string, unknown>
+  type: (typeof EdgeType)[keyof typeof EdgeType]
+  timestamp?: number
 }

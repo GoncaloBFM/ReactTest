@@ -1,10 +1,8 @@
 import { GraphEdge } from "@/types/GraphEdge";
-import { CompoundNode } from "@/types/CompoundNode";
 import { NodeType } from "@/types/NodeType";
+import {GraphElement} from "@/types/GraphElement";
 
-export interface GraphNode {
-  id: string
-  expanded: boolean
-
-  data: Record<string, unknown>
+export type NodeMetadata = Omit<GraphNode, 'data'>;
+export interface GraphNode extends GraphElement{
+  type: (typeof NodeType)[keyof typeof NodeType];
 }

@@ -1,5 +1,5 @@
-export enum NodeType {
-    Person,
-    Entity,
-    Account
-}
+
+export const NodeType = {
+  person: 'person',
+  account: 'account'
+} as const

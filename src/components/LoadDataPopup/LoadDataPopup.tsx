@@ -36,13 +36,13 @@ export function LoadDataPopup(props: Props) {
             <Box className={styles.LoadDataPopup}>
                 {isLoading && <LoadingSpinner/>}
                 <Stack direction="row" justifyContent="space-between">
-                    <Stack direction="row" spacing={2}>
+                    <Stack direction="row" spacing={1}>
                         <TextField id="outlined-basic" label="Person name" onChange={e => setPersonName(e.target.value)} variant="outlined"/>
-                        <Button variant="outlined" onClick={()=>{personName && !isLoading && doLoadDataPopupSearch(personName)}}>Search</Button>
-                        <Button variant="outlined"> Advanced Search</Button>
+                        <Button variant="outlined" size={'small'} onClick={()=>{personName && !isLoading && doLoadDataPopupSearch(personName)}}>Search</Button>
+                        <Button variant="outlined" size={'small'}> Advanced Search</Button>
                     </Stack>
-                    <Stack direction="row" spacing={2}>
-                        <Button variant="outlined" onClick={() => {props.onSubmit(dataSelected); closePopup();}}>Add to graph</Button>
+                    <Stack direction="row" spacing={1}>
+                        <Button variant="outlined" size={'small'} onClick={() => {props.onSubmit(dataSelected); closePopup();}}>Add to graph</Button>
                     </Stack>
                 </Stack>
 
