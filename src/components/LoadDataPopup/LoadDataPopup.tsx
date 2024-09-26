@@ -1,14 +1,14 @@
 import React, {useRef, useState} from 'react';
 import {TextField, Stack, Modal, Box, Button, TextFieldProps} from "@mui/material";
 import styles from './LoadDataPopup.module.scss';
-import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid';
+import {DataGrid, GridColDef, useGridApiRef} from '@mui/x-data-grid';
 
 
 import {useLoadDataPopupSearch} from '@/hooks/useLoadDataPopupSearch';
 import {LoadingSpinner} from "@/components/LoadingSpinner/LoadingSpinner";
 
 type Props = {
-    isOpen:boolean,
+    isOpen: boolean,
     setOpen: (open: boolean) => void,
     onSubmit: (nodesIds: Array<string>) => Promise<void>
 };
@@ -37,12 +37,18 @@ export function LoadDataPopup(props: Props) {
                 {isLoading && <LoadingSpinner/>}
                 <Stack direction="row" justifyContent="space-between">
                     <Stack direction="row" spacing={1}>
-                        <TextField id="outlined-basic" label="Person name" onChange={e => setPersonName(e.target.value)} variant="outlined"/>
-                        <Button variant="outlined" size={'small'} onClick={()=>{personName && !isLoading && doLoadDataPopupSearch(personName)}}>Search</Button>
+                        <TextField id="outlined-basic" label="Person name" onChange={e => setPersonName(e.target.value)}
+                                   variant="outlined"/>
+                        <Button variant="outlined" size={'small'} onClick={() => {
+                            personName && !isLoading && doLoadDataPopupSearch(personName)
+                        }}>Search</Button>
                         <Button variant="outlined" size={'small'}> Advanced Search</Button>
                     </Stack>
                     <Stack direction="row" spacing={1}>
-                        <Button variant="outlined" size={'small'} onClick={() => {props.onSubmit(dataSelected); closePopup();}}>Add to graph</Button>
+                        <Button variant="outlined" size={'small'} onClick={() => {
+                            props.onSubmit(dataSelected);
+                            closePopup();
+                        }}>Add to graph</Button>
                     </Stack>
                 </Stack>
 
@@ -50,8 +56,10 @@ export function LoadDataPopup(props: Props) {
                     <DataGrid
                         rows={tableData}
                         columns={
-                        ['id','name','country','address','birthDate','type'].map(
-                            (header: string)=> {return {field: header, headerName: header, flex: 1}})}
+                            ['id', 'name', 'country', 'address', 'birthDate', 'type'].map(
+                                (header: string) => {
+                                    return {field: header, headerName: header, flex: 1}
+                                })}
                         onRowSelectionModelChange={(ids) => {
                             setDataSelected(ids.map(x => x.toString()))
                         }}

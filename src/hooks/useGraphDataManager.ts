@@ -44,7 +44,7 @@ export function useGraphDataManager(setIsLoading: SetStateAction<any>) {
         throw new Error(`Unknown edge type ${rawEdge['type']}`)
     }, [])
 
-    const parseRawNode = useCallback((rawNode: Record<string, any>):GraphNode => {
+    const parseRawNode = useCallback((rawNode: Record<string, any>): GraphNode => {
         if (rawNode['type'] == NodeType.person)
             return new PersonNode(rawNode['id'], rawNode['name'], rawNode as Omit<any, 'id' | 'name' | 'type'>);
 
@@ -62,16 +62,16 @@ export function useGraphDataManager(setIsLoading: SetStateAction<any>) {
             const neighborNodes = rawNeighborNodes.map(parseRawNode)
             const neighborEdges = rawNeighborEdges.map(parseRawEdge)
             setGraphData({
-                nodes: neighborNodes.concat(graphData.nodes.filter((a:GraphNode) => !neighborNodes.find((b:GraphNode) => b.id === a.id))),
-                edges: neighborEdges.concat(graphData.edges.filter((a:GraphEdge) => !neighborEdges.find((b:GraphEdge) => b.id === a.id)))
+                nodes: neighborNodes.concat(graphData.nodes.filter((a: GraphNode) => !neighborNodes.find((b: GraphNode) => b.id === a.id))),
+                edges: neighborEdges.concat(graphData.edges.filter((a: GraphEdge) => !neighborEdges.find((b: GraphEdge) => b.id === a.id)))
             })
             setIsLoading(false);
         };
     }, [setGraphData, graphData, setIsLoading, parseRawNode, parseRawEdge]);
 
     const removeNodeData = (node_ids: Array<string>) => {
-        const newNodes = graphData.nodes.filter((node:GraphNode) => !node_ids.includes(node.id))
-        const newEdges = graphData.edges.filter((edge:GraphEdge) => !node_ids.includes(edge.source) && !node_ids.includes(edge.target))
+        const newNodes = graphData.nodes.filter((node: GraphNode) => !node_ids.includes(node.id))
+        const newEdges = graphData.edges.filter((edge: GraphEdge) => !node_ids.includes(edge.source) && !node_ids.includes(edge.target))
         setGraphData({
             nodes: newNodes,
             edges: newEdges

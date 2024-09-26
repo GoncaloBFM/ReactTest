@@ -1,4 +1,4 @@
-import React, { SetStateAction } from 'react';
+import React, {SetStateAction} from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -24,12 +24,12 @@ export function DetailTab(props: Props) {
         const properties = Object.keys(element).sort()
         return properties.map((property: string) =>
             <ListItem key={property}>
-                <ListItemText secondary={property} primary={element[property]} />
+                <ListItemText secondary={property} primary={element[property]}/>
             </ListItem>
         )
     }
 
-    if (props.selectedElements.length === 0 || props.selectedElements[0].elementType !== ElementType.node ) {
+    if (props.selectedElements.length === 0 || props.selectedElements[0].elementType !== ElementType.node) {
         return
     }
 
@@ -54,7 +54,7 @@ export function DetailTab(props: Props) {
                 <List dense={true}>
                     {node.type == NodeType.person &&
                         <ListItem key={'name'}>
-                            <ListItemText secondary={'name'} primary={(node as PersonNode).name} />
+                            <ListItemText secondary={'name'} primary={(node as PersonNode).name}/>
                         </ListItem>
                     }
                     {generateListElement(node.data)}

@@ -9,12 +9,12 @@
     display: flex;
 }
 
-.top-vis{
+.top-vis {
     width: 100%;
     height: 100%;
 }
 
-.bottom-vis{
+.bottom-vis {
     width: 50%;
     height: 100%;
 }

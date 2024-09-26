@@ -4,16 +4,20 @@
   grid-template-rows: 65px 1fr;
   overflow: hidden;
 
-  .header{
+  .header {
   }
+
   .detailTab {
     height: 100%
   }
-  .visualizations{
+
+  .visualizations {
     overflow: auto;
-    .top{
+
+    .top {
       height: 65%;
     }
+
     .bottom {
       height: 35%;
     }
