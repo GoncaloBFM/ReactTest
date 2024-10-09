@@ -12,90 +12,134 @@ import {NodeType} from "@/types/NodeType";
 import {PersonNode} from "@/types/PersonNode";
 import {AccountNode} from "@/types/AccountNode";
 
+export type GraphManager = {
+    expandNodeData: (nodeIds: Array<string>) => void,
+    removeNodeData: (nodeIds: Array<string>) => void,
+    loadGraphData: (nodeIds: Array<string>) => void,
+    removeEdgeData: (nodeIds: Array<string>) => void
+}
 
-export function useGraphDataManager(setIsLoading: SetStateAction<any>) {
+export function useGraphDataManager() {
+    const [isLoading, setIsLoading] = useState(false); //TODO: this
 
     const [graphData, setGraphData] = useState(
         {nodes: new Array<GraphNode>, edges: new Array<GraphEdge>}
     );
 
-    //TODO: if I use "useCallback" here why do I need to declare it below in the dependency array of the useMemo
-    const parseRawEdge = useCallback((rawEdge: Record<string, any>) => {
-        const data = rawEdge as Omit<any, 'id' | 'source' | 'target' | 'type' | 'currencyPaid' | 'amountPaid'>  //TODO: this needs to be automated
-        if (rawEdge['type'] == EdgeType.transaction)
+    const [dataFields, setDataFields] = useState(
+        {
+            [NodeType.person]: ['country','address','birthDate'],
+            [NodeType.account]: [],
+            [EdgeType.transaction]: [],
+            [EdgeType.connection]: []
+        }
+    )
+
+    const parseRawEdge = useCallback((rawEdge: {[key:string]: string}) => {
+        if (rawEdge['type'] == EdgeType.transaction) {
             return new TransactionEdge(
                 rawEdge['source'],
                 rawEdge['target'],
                 rawEdge['id'],
                 parseFloat(rawEdge['amountPaid']),
                 rawEdge['currencyPaid'],
-                data,
+                Object.fromEntries(dataFields.transaction.map((k:string) => [k, rawEdge[k]])),
                 parseFloat(rawEdge['timestamp']),
             )
+        }
 
         if (rawEdge['type'] == EdgeType.connection)
             return new ConnectionEdge(
                 rawEdge['source'],
                 rawEdge['target'],
                 rawEdge['id'],
-                data
+                Object.fromEntries(dataFields.connection.map((k:string) => [k, rawEdge[k]])),
             )
 
         throw new Error(`Unknown edge type ${rawEdge['type']}`)
     }, [])
 
-    const parseRawNode = useCallback((rawNode: Record<string, any>): GraphNode => {
+    const parseRawNode = useCallback((rawNode: {[key:string]: string}): GraphNode => {
         if (rawNode['type'] == NodeType.person)
-            return new PersonNode(rawNode['id'], rawNode['name'], rawNode as Omit<any, 'id' | 'name' | 'type'>);
+            return new PersonNode(
+                rawNode['id'],
+                rawNode['name'],
+                Object.fromEntries(dataFields.person.map((k:string) => [k, rawNode[k]])),
+            );
 
         if (rawNode['type'] == NodeType.account)
-            return new AccountNode(rawNode['id'], rawNode as Omit<any, 'id' | 'name' | 'type'>);
+            return new AccountNode(
+                rawNode['id'],
+                Object.fromEntries(dataFields.account.map((k:string) => [k, rawNode[k]]))
+            );
 
         throw new Error(`Unknown node type ${rawNode['type']}`)
     }, [])
 
     const expandNodeData = useMemo(() => {
-        return async (node_id: string) => {
+        return async (nodeIds: Array<string>) => {
             setIsLoading(true);
-            const response = await fetch(`${SERVER_URL}/neighbors/${node_id}`)
+            const response = await fetch(`${SERVER_URL}/neighbors/${nodeIds.join(',')}`)
             const [rawNeighborNodes, rawNeighborEdges] = await response.json();
-            const neighborNodes = rawNeighborNodes.map(parseRawNode)
-            const neighborEdges = rawNeighborEdges.map(parseRawEdge)
+            const newNeighborNodes = rawNeighborNodes.map(parseRawNode)
+            const newNeighborEdges = rawNeighborEdges.map(parseRawEdge)
+            const neighborNodes = newNeighborNodes.concat(graphData.nodes.filter((a: GraphNode) => !newNeighborNodes.some((b: GraphNode) => b.id === a.id)))
+            const neighborEdges = newNeighborEdges.concat(graphData.edges.filter((a: GraphEdge) => !newNeighborEdges.some((b: GraphEdge) => b.id === a.id)))
+            graphData.nodes.filter((node: GraphNode) => nodeIds.some(nodeId=> node.id === nodeId)).forEach(
+                node => node.expanded = true
+            ) //TODO: seems to be buggy because it laods existing data again
             setGraphData({
-                nodes: neighborNodes.concat(graphData.nodes.filter((a: GraphNode) => !neighborNodes.find((b: GraphNode) => b.id === a.id))),
-                edges: neighborEdges.concat(graphData.edges.filter((a: GraphEdge) => !neighborEdges.find((b: GraphEdge) => b.id === a.id)))
+                nodes: neighborNodes,
+                edges: neighborEdges
             })
             setIsLoading(false);
         };
     }, [setGraphData, graphData, setIsLoading, parseRawNode, parseRawEdge]);
 
-    const removeNodeData = (node_ids: Array<string>) => {
-        const newNodes = graphData.nodes.filter((node: GraphNode) => !node_ids.includes(node.id))
-        const newEdges = graphData.edges.filter((edge: GraphEdge) => !node_ids.includes(edge.source) && !node_ids.includes(edge.target))
+    const removeNodeData = (nodeIds: Array<string>) => { //TODO: clear not expanded flag on neighbor nodes
+        const newNodes = graphData.nodes.filter((node: GraphNode) => !nodeIds.some(nodeId => nodeId == node.id))
+        const newEdges = graphData.edges.filter((edge: GraphEdge) => !nodeIds.some(nodeId => nodeId == edge.source || nodeId == edge.target))
         setGraphData({
             nodes: newNodes,
             edges: newEdges
         })
     };
 
+    const removeEdgeData = (edgeIds: Array<string>) => { //TODO: clear not expanded flag on neighbor nodes
+        const newEdges = graphData.edges.filter((edge: GraphEdge) => !edgeIds.some(nodeId => nodeId == edge.id))
+        setGraphData({
+            nodes: graphData.nodes,
+            edges: newEdges
+        })
+    };
+
     const loadGraphData = useMemo(() => {
-        return async (node_ids: string[]) => {
+        return async (nodeIds: string[]) => {
             setIsLoading(true);
-            const response = await fetch(`${SERVER_URL}/graph/${node_ids.join(',')}`)
+            const response = await fetch(`${SERVER_URL}/graph/${nodeIds.join(',')}`)
             const [rawNodes, rawEdges] = await response.json();
+            const newNodes = rawNodes.map(parseRawNode)
+            const newEdges = rawEdges.map(parseRawEdge)
+            const nodes = newNodes.concat(graphData.nodes.filter((a: GraphNode) => !newNodes.some((b: GraphNode) => b.id === a.id)))
+            const edges = newEdges.concat(graphData.edges.filter((a: GraphEdge) => !newEdges.some((b: GraphEdge) => b.id === a.id)))
             setGraphData({
-                nodes: rawNodes.map(parseRawNode),
-                edges: rawEdges.map(parseRawEdge)
+                nodes: nodes,
+                edges: edges
             })
             setIsLoading(false);
         };
-    }, [setGraphData, setIsLoading, parseRawNode, parseRawEdge]);
+    }, [setGraphData, setIsLoading, parseRawNode, parseRawEdge, graphData]);
 
     return {
-        expandNodeData,
-        removeNodeData,
-        loadGraphData,
-        graphData
+        graphManager: {
+            expandNodeData,
+            removeNodeData,
+            loadGraphData,
+            removeEdgeData
+        },
+        dataFields,
+        graphData,
+        isLoading
     };
 
 }

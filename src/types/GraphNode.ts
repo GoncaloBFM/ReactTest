@@ -6,4 +6,5 @@ export type NodeMetadata = Omit<GraphNode, 'data'>;
 
 export interface GraphNode extends GraphElement {
     type: (typeof NodeType)[keyof typeof NodeType];
+    expanded: boolean;
 }

@@ -9,16 +9,18 @@ export class ConnectionEdge implements GraphEdge {
     source: string
     target: string
     id: string
-    data: Record<string, unknown>
+    data: {[key:string]: string}
     type: (typeof EdgeType)[keyof typeof EdgeType];
-    elementType: (typeof ElementType)[keyof typeof ElementType]
+    elementType: (typeof ElementType)[keyof typeof ElementType];
+    hidden:false;
 
-    constructor(source: string, target: string, id: string, data: Record<string, unknown>) {
+    constructor(source: string, target: string, id: string, data: {[key:string]: string}) {
         this.source = source
         this.target = target
         this.id = id
         this.data = data
         this.type = EdgeType.connection
         this.elementType = ElementType.edge
+        this.hidden = false
     }
 }

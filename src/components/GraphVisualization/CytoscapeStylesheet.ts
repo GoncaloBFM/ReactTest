@@ -7,18 +7,20 @@ export const CYTOSCAPE_STYLESHEET = [
         }
     }, {
         selector: 'node',
+        classes: [],
         style: {
             'overlay-opacity': 0,
             'font-size': 5,
             shape: 'ellipse',
             width: 10,
             height: 10,
-            'text-background-color': '#fff',
+            'text-background-color': '#eee',
             'text-background-shape': 'round-rectangle',
             'text-background-opacity': 1
         }
     }, {
         selector: 'edge',
+        classes: [],
         style: {
             'overlay-opacity': 0,
             'font-size': 4,
@@ -27,7 +29,7 @@ export const CYTOSCAPE_STYLESHEET = [
             "text-margin-x": "0px",
             "text-margin-y": "0px",
             'text-background-opacity': 1,
-            'text-background-color': '#fff',
+            'text-background-color': '#eee  ',
             'text-background-shape': 'round-rectangle'
         }
     }, {
@@ -36,6 +38,15 @@ export const CYTOSCAPE_STYLESHEET = [
             'background-color': '#922',
             'shape': 'round-octagon',
             label: 'data(name)',
+        }
+    }, {
+        selector: 'node[expanded="true"]',
+        style: {
+            'border-position':'inside',
+            'border-color':'black',
+            'border-opacity': 1,
+            'border-style': 'dotted',
+            'border-width': 1,
         }
     }, {
         selector: 'node[type="account"]',
@@ -62,7 +73,7 @@ export const CYTOSCAPE_STYLESHEET = [
             'line-style': 'dashed'
         }
     }, {
-        selector: 'edge:selected',
+        selector: '.manualEdgeSelect',
         css: {
             'line-color': 'SteelBlue',
             'width': 2,
@@ -72,7 +83,7 @@ export const CYTOSCAPE_STYLESHEET = [
             'source-arrow-color': 'SteelBlue'
         }
     }, {
-        selector: 'node:selected',
+        selector: '.manualNodeSelect',
         css: {
             'background-color': 'SteelBlue',
             'color': 'SteelBlue',

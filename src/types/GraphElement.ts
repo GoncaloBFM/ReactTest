@@ -4,6 +4,7 @@ import {ElementType} from "@/types/ElementType";
 
 export interface GraphElement {
     id: string
-    data: Record<string, unknown>
+    data: {[key:string]: string}
     elementType: (typeof ElementType)[keyof typeof ElementType]
+    hidden: boolean
 }

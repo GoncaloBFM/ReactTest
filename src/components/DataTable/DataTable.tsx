@@ -1,9 +1,17 @@
-import React, {SetStateAction, useEffect, useMemo} from 'react';
+import React, {SetStateAction, useEffect, useMemo, useState} from 'react';
 
 import {
     MaterialReactTable,
+    MRT_ColumnActionMenu,
+    MRT_ColumnDef,
     MRT_GlobalFilterTextField,
+    MRT_RowSelectionState,
+    MRT_ShowHideColumnsButton,
+    MRT_ShowHideColumnsMenu,
+    MRT_ToggleDensePaddingButton,
     MRT_ToggleFiltersButton,
+    MRT_ToggleFullScreenButton,
+    MRT_ToggleGlobalFilterButton,
     useMaterialReactTable,
 } from 'material-react-table';
 
@@ -12,78 +20,49 @@ import {
 import {GraphData} from "@/types/GraphData";
 import {GraphElement} from "@/types/GraphElement";
 import styles from './DataTable.module.scss'
-import Box from '@mui/material/Box';
-import {Button, MenuItem, Select, Stack} from "@mui/material";
 import {ElementType} from '@/types/ElementType';
+import {GraphNode} from "@/types/GraphNode";
+import {GraphEdge} from "@/types/GraphEdge";
+import {PersonNode} from "@/types/PersonNode";
+import {AccountNode} from "@/types/AccountNode";
+import {TransactionEdge} from "@/types/TransactionEdge";
+import {ConnectionEdge} from "@/types/ConnectionEdge";
+import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
+import {Box, Button, IconButton, Stack} from "@mui/material";
+import {GraphManager} from "@/hooks/useGraphDataManager";
+import OpenWithIcon from "@mui/icons-material/OpenWith";
+import ClearIcon from "@mui/icons-material/Clear";
 
 type Props = {
     setSelectedElements: SetStateAction<any>
     selectedElements: Array<GraphElement>
     graphData: GraphData,
+    graphManager: GraphManager
 };
 
-
-function getAvailableColumns(elements: Array<GraphElement>) {
-    const columns = elements
-        .map(e => Object.keys(e.data))
-
-        // count each key occurrence
-        .reduce((st, keys) => {
-            keys.forEach(k => st[k] = true)
-            return st;
-        }, {} as Record<string, boolean>);
-
-    return Object.keys(columns);
-}
-
-function getSuggestedColumns<T>(elements: Array<GraphElement>, count = 5) {
-    const columnsCount = elements
-        .map(e => Object.keys(e.data))
-
-        // count each key occurrence
-        .reduce((st, keys) => {
-            keys.forEach(k => st[k] == null
-                ? st[k] = 1
-                : st[k]++)
-            return st;
-        }, {} as Record<string, number>);
-
-    return Object.entries(columnsCount)
-        // sort descending by count
-        .sort((a, b) => b[1] - a[1])
-
-        // get top N
-        .slice(0, count - 1)
-        .map(e => e[0]);
-}
-
 export function DataTable(props: Props) {
-    const data = props.selectedElements.length > 0 ? props.selectedElements : props.graphData.nodes
-    const [elementTypeSelected, setElementTypeSelected] = React.useState(ElementType.node);
-    const columns = useMemo(
-        () => [
-            ...getAvailableColumns(data)
-                .map(key => ({
-                    id: key,
-                    accessorKey: key,
-                    header: key,
-                    filterVariant: 'autocomplete',
-                }) as const),
-        ],
-        [data]
-    );
+    const data = useMemo(() =>
+        (props.selectedElements.length > 0) ? props.selectedElements : props.graphData.edges
+    , [props.selectedElements, props.graphData])
+    const elementType = data.length > 0 ? data[0].elementType : ElementType.edge
 
-    const rowSelectionState = useMemo(
-        () => Object.fromEntries(
-            props.selectedElements
-                ?.map(element => [element.id, true])
-            ?? []),
-        [props.selectedElements]
-    );
+    const columns = useMemo(() =>
+        elementType == ElementType.node ? TABLE_COLUMNS.node : TABLE_COLUMNS.edge
+    , [elementType])
+
+    const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({}); //ts type available
+
+    // const subSelectedElements = useMemo(
+    //     () => {return Object.fromEntries(props.selectedElements.map(element => [element.id, true]))},
+    //     [props.selectedElements]
+    // );
+    //
+
+    useEffect(() => setRowSelection({}), [setRowSelection, props.selectedElements]);
 
     const table = useMaterialReactTable({
-        columns,
-        data: data,
+        columns: columns as any,
+        data: data as any,
         layoutMode: 'grid',
         enableFullScreenToggle: true,
         enableHiding: true,
@@ -105,7 +84,7 @@ export function DataTable(props: Props) {
         enableDensityToggle: false,
         enableRowActions: false,
         enableRowSelection: true,
-        positionToolbarAlertBanner: 'none', //TODO: change alert bar color and remove button
+        positionToolbarAlertBanner: 'none',
         initialState: {
             showColumnFilters: true,
             showGlobalFilter: true,
@@ -116,18 +95,54 @@ export function DataTable(props: Props) {
             density: 'compact',
         },
 
-        //positionToolbarAlertBanner: 'bottom',
         muiSearchTextFieldProps: {
             size: 'small',
             variant: 'outlined',
         },
 
-        manualPagination: false,
+        manualPagination: true,
         muiPaginationProps: {
             color: 'secondary',
             shape: 'rounded',
             variant: 'outlined',
         },
+        renderTopToolbarCustomActions: ({ table }) => (
+            <Box sx={{ display: 'flex'}}>
+                {props.selectedElements.length > 0 && elementType == ElementType.node &&
+                    <Stack direction="row" spacing={1}>
+                        <Button onClick={() => {
+                            props.graphManager.expandNodeData(props.selectedElements.map(e => e.id));}
+                        } variant="outlined">
+                            <OpenWithIcon/>
+                        </Button>
+                        <Button onClick={() => {
+                            props.graphManager.removeNodeData(props.selectedElements.map(e => e.id))
+                            props.setSelectedElements([])
+                        }} variant="outlined">
+                            <ClearIcon/>
+                        </Button>
+                    </Stack>
+                }
+                {props.selectedElements.length > 0 && elementType == ElementType.edge &&
+                    <Stack direction="row" spacing={1}>
+                        <Button onClick={() => {
+                            props.graphManager.removeEdgeData(props.selectedElements.map(e => e.id))
+                            props.setSelectedElements([])
+                        }} variant="outlined">
+                            <ClearIcon/>
+                        </Button>
+                    </Stack>
+                }
+            </Box>
+        ),
+        renderToolbarInternalActions: ({ table }) => (
+            <Box sx={{ display: 'flex'}}>
+                <MRT_ToggleFullScreenButton table={table} />
+                <MRT_ToggleFiltersButton table={table} />
+                <MRT_ShowHideColumnsButton table={table} />
+            </Box>
+        ),
+        onRowSelectionChange: setRowSelection,
 
         // TODO: add dropdown for type of element to display in table
         // renderTopToolbar: ({ table }) => {
@@ -145,32 +160,12 @@ export function DataTable(props: Props) {
 
         getRowId: (e) => e.id,
 
-        onRowSelectionChange: (updaterOrValue) => {
-            const selectedState = (typeof (updaterOrValue) == 'function')
-                ? updaterOrValue(rowSelectionState)
-                : updaterOrValue;
-
-            const ids = Object.entries(selectedState)
-                // filter selected === true
-                .filter(([_k, v]) => v)
-                .map(([k, _v]) => k);
-
-            //props.onSelectElements?.(ids); //TODO: add selection here
-        },
-
         state: {
-            rowSelection: rowSelectionState,
+            rowSelection: rowSelection,
         },
 
 
     });
-
-    useEffect(() => {
-        // auto-set column visibility when data changes
-        const suggestedColumns = getSuggestedColumns(data);
-        table.setColumnVisibility(
-            Object.fromEntries(suggestedColumns.map(k => [k, true])));
-    }, [table, data]);
 
     return <div className={styles.DataTable}><MaterialReactTable table={table}/></div>
 }
