@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Button, Divider, FormControl, MenuItem, Select, Stack} from "@mui/material";
 import styles from './DashboardHeader.module.scss'
 import {LoadDataPopup} from "@/components/LoadDataPopup/LoadDataPopup";
@@ -19,9 +19,9 @@ type Props = {
 };
 
 export function DashboardHeader(props: Props) {
-    const [currencyBehavior, setCurrencyBehavior] = React.useState('filter');
-    const [currency, setCurrency] = React.useState('USD');
-    const [isLoadDataPopupOpen, setLoadDataPopupOpen] = React.useState(false);
+    const [currencyBehavior, setCurrencyBehavior] = useState('filter');
+    const [currency, setCurrency] = useState('USD');
+    const [isLoadDataPopupOpen, setLoadDataPopupOpen] = useState(false);
 
     return (
         <Stack direction="row" justifyContent="space-between" className={styles.DashboardHeader} spacing={1}>

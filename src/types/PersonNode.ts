@@ -17,7 +17,7 @@ export class PersonNode implements GraphNode {
         this.elementType = ElementType.node
         this.data = data
         this.name = name
-        this.expanded = true
+        this.expanded = false
         this.hidden = false
     }
 

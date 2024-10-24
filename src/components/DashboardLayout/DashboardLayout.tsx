@@ -8,11 +8,13 @@ import {useGraphDataManager} from "@/hooks/useGraphDataManager";
 import {useCytoscapeManager} from "@/hooks/useCytoscapeManager";
 import {GraphElement} from "@/types/GraphElement";
 import {DataTable} from "@/components/DataTable/DataTable";
+import {useSelectedDataManager} from "@/hooks/useSelectedDataManager";
+import {DetailTab} from "@/components/DetailTab/DetailTab";
 
 
 export default function DashboardLayout() {
-    const [selectedElements, setSelectedElements] = useState(new Array<GraphElement>());
     const {graphData, graphManager, isLoading} = useGraphDataManager()
+    const selectedDataManager = useSelectedDataManager()
     const cytoscapeManager = useCytoscapeManager(graphData)
 
     return (
@@ -23,23 +25,20 @@ export default function DashboardLayout() {
                                  cytoscapeManager={cytoscapeManager}></DashboardHeader></div>
             <div className={styles.visualizations}>
                 <Grid container className={styles.top}>
-                    <Grid item xs={12}>
+                    <Grid item xs={10}>
                         <GraphVisualization
-                            setSelectElements={setSelectedElements}
-                            selectedElements={selectedElements}
-                            manager={cytoscapeManager}
+                            cytoscapeManager={cytoscapeManager}
+                            selectedDataManager={selectedDataManager}
                             graphData={graphData}/>
                     </Grid>
-                    {/*<Grid item xs={2}>*/}
-                    {/*    <DetailTab graphManager={graphManager}*/}
-                    {/*               selectedElements={selectedElements}/>*/}
-                    {/*</Grid>*/}
+                    <Grid item xs={2}>
+                        <DetailTab selectedDataManager={selectedDataManager} graphManager={graphManager}/>
+                    </Grid>
                 </Grid>
                 <div className={styles.bottom}>
                     <DataTable
                         graphData={graphData}
-                        selectedElements={selectedElements}
-                        setSelectedElements={setSelectedElements}
+                        selectedDataManager={selectedDataManager}
                         graphManager={graphManager}/>
                     {/*<Histogram/>*/}
                 </div>

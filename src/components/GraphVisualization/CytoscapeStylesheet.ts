@@ -38,9 +38,12 @@ export const CYTOSCAPE_STYLESHEET = [
             'background-color': '#922',
             'shape': 'round-octagon',
             label: 'data(name)',
+            'background-image': '/person.svg',
+            'background-image-containment': 'over',
+            'background-fit' : 'contain'
         }
     }, {
-        selector: 'node[expanded="true"]',
+        selector: 'node[expanded="false"]',
         style: {
             'border-position':'inside',
             'border-color':'black',
@@ -51,6 +54,9 @@ export const CYTOSCAPE_STYLESHEET = [
     }, {
         selector: 'node[type="account"]',
         style: {
+            'background-image': '/account.svg',
+            'background-image-containment': 'over',
+            'background-fit' : 'contain',
             'background-color': '#292',
             label: 'data(id)',
         }
@@ -69,7 +75,7 @@ export const CYTOSCAPE_STYLESHEET = [
         selector: 'edge[type="connection"]',
         style: {
             'width': 1,
-            'line-color': '#777',
+            'line-color': '#000',
             'line-style': 'dashed'
         }
     }, {
@@ -81,6 +87,21 @@ export const CYTOSCAPE_STYLESHEET = [
             'color': 'SteelBlue',
             'target-arrow-color': 'SteelBlue',
             'source-arrow-color': 'SteelBlue'
+        }
+    }, {
+        selector: 'node[faded="true"]',
+        style: {
+            'text-opacity': 0.2,
+            'background-opacity': 0.2,
+            'border-opacity': 0.2,
+            'background-image-opacity': 0.2
+        }
+    }, {
+        selector: 'edge[faded="true"]',
+        style: {
+            'text-opacity': 0.2,
+            'background-opacity': 0.2,
+            'line-opacity': 0.2,
         }
     }, {
         selector: '.manualNodeSelect',

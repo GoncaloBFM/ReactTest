@@ -7,14 +7,26 @@ const ELEMENT_COLUMNS = [{
     accessorKey: 'id',
     header: 'Id',
     filterVariant: 'autocomplete',
-}, {
+}]
+
+const TYPE_COLUMN =
+ {
     id: 'type',
     accessorKey: 'type',
     header: 'Type',
     filterVariant: 'autocomplete',
-}]
+}
 
-const NODE_COLUMNS = ELEMENT_COLUMNS.concat([])
+const NODE_COLUMNS = ELEMENT_COLUMNS.concat([
+    {
+        id: 'expanded',
+        accessorKey: 'expandedText',
+        header: 'Is expanded',
+        filterVariant: 'autocomplete',
+    }
+])
+
+const NODE_COLUMNS_W_TYPE= NODE_COLUMNS.concat([TYPE_COLUMN])
 
 const EDGE_COLUMNS = ELEMENT_COLUMNS.concat([{
     id: 'source',
@@ -28,6 +40,8 @@ const EDGE_COLUMNS = ELEMENT_COLUMNS.concat([{
     filterVariant: 'autocomplete',
 }])
 
+const EDGE_COLUMNS_W_TYPE = EDGE_COLUMNS.concat([TYPE_COLUMN])
+
 const NODE_PERSON_COLUMNS = NODE_COLUMNS.concat([{
     id: 'name',
     accessorKey: 'name',
@@ -35,7 +49,7 @@ const NODE_PERSON_COLUMNS = NODE_COLUMNS.concat([{
     filterVariant: 'autocomplete',
 }])
 
-const NODE_ACCOUNT_COLUMNS = NODE_PERSON_COLUMNS.concat([])
+const NODE_ACCOUNT_COLUMNS = NODE_COLUMNS.concat([])
 
 const EDGE_CONNECTION_COLUMNS = EDGE_COLUMNS.concat([])
 
@@ -43,26 +57,30 @@ const EDGE_TRANSACTION_COLUMNS = EDGE_COLUMNS.concat([{
     id: 'amountPaid',
     accessorKey: 'amountPaid',
     header: 'Amount',
-    filterVariant: 'autocomplete',
+    filterVariant: 'range',
+    filterFn: 'between',
+    size: 200,
 },{
     id: 'currencyPaid',
     accessorKey: 'currencyPaid',
     header: 'Currency',
     filterVariant: 'autocomplete',
-},{
+}, { //convert to date for sorting and filtering
     id: 'timestamp',
+    header: 'Time',
     accessorKey: 'timestamp',
-    header: 'Timestamp',
     filterVariant: 'autocomplete',
-}])
-
+}] as any)
+    // filterVariant: 'datetime-range',
+    // size: 400,
+    // Cell: ({cell}: any) => {
+    //     return `${cell.getValue().toLocaleDateString()} ${cell.getValue().toLocaleTimeString()}`
+    // },
 export const TABLE_COLUMNS = {
     [NodeType.person]: NODE_PERSON_COLUMNS,
     [NodeType.account]: NODE_ACCOUNT_COLUMNS,
     [EdgeType.connection]: EDGE_CONNECTION_COLUMNS,
     [EdgeType.transaction]: EDGE_TRANSACTION_COLUMNS,
-    [ElementType.node]: NODE_PERSON_COLUMNS.concat(NODE_ACCOUNT_COLUMNS).filter(
-        (obj1, i, array) => array.findIndex(obj2 => (obj2.id === obj1.id)) === i),
-    [ElementType.edge]: EDGE_TRANSACTION_COLUMNS.concat(EDGE_CONNECTION_COLUMNS).filter(
-        (obj1, i, array) => array.findIndex(obj2 => (obj2.id === obj1.id)) === i),
-} as const
+    [ElementType.node]: NODE_COLUMNS_W_TYPE,
+    [ElementType.edge]: EDGE_COLUMNS_W_TYPE
+}

@@ -5,12 +5,11 @@ import {GraphNode} from "@/types/GraphNode";
 import {EdgeType} from "@/types/EdgeType";
 import {TransactionEdge} from "@/types/TransactionEdge";
 import {ConnectionEdge} from "@/types/ConnectionEdge";
-import {elementType} from "prop-types";
-import {HTMLElementType} from "@mui/utils";
-import {ElementType} from "@/types/ElementType";
 import {NodeType} from "@/types/NodeType";
 import {PersonNode} from "@/types/PersonNode";
 import {AccountNode} from "@/types/AccountNode";
+import {GraphData} from "@/types/GraphData";
+import {bifurcateBy} from "@/utils/array";
 
 export type GraphManager = {
     expandNodeData: (nodeIds: Array<string>) => void,
@@ -22,9 +21,7 @@ export type GraphManager = {
 export function useGraphDataManager() {
     const [isLoading, setIsLoading] = useState(false); //TODO: this
 
-    const [graphData, setGraphData] = useState(
-        {nodes: new Array<GraphNode>, edges: new Array<GraphEdge>}
-    );
+    const [graphData, setGraphData] = useState(new GraphData([], []));
 
     const [dataFields, setDataFields] = useState(
         {
@@ -35,7 +32,7 @@ export function useGraphDataManager() {
         }
     )
 
-    const parseRawEdge = useCallback((rawEdge: {[key:string]: string}) => {
+    const parseRawEdge = useCallback((rawEdge: {[key:string]: string}): GraphEdge => {
         if (rawEdge['type'] == EdgeType.transaction) {
             return new TransactionEdge(
                 rawEdge['source'],
@@ -44,7 +41,7 @@ export function useGraphDataManager() {
                 parseFloat(rawEdge['amountPaid']),
                 rawEdge['currencyPaid'],
                 Object.fromEntries(dataFields.transaction.map((k:string) => [k, rawEdge[k]])),
-                parseFloat(rawEdge['timestamp']),
+                new Date(parseFloat(rawEdge['timestamp']) * 1000),
             )
         }
 
@@ -83,34 +80,32 @@ export function useGraphDataManager() {
             const [rawNeighborNodes, rawNeighborEdges] = await response.json();
             const newNeighborNodes = rawNeighborNodes.map(parseRawNode)
             const newNeighborEdges = rawNeighborEdges.map(parseRawEdge)
-            const neighborNodes = newNeighborNodes.concat(graphData.nodes.filter((a: GraphNode) => !newNeighborNodes.some((b: GraphNode) => b.id === a.id)))
-            const neighborEdges = newNeighborEdges.concat(graphData.edges.filter((a: GraphEdge) => !newNeighborEdges.some((b: GraphEdge) => b.id === a.id)))
-            graphData.nodes.filter((node: GraphNode) => nodeIds.some(nodeId=> node.id === nodeId)).forEach(
-                node => node.expanded = true
-            ) //TODO: seems to be buggy because it laods existing data again
-            setGraphData({
-                nodes: neighborNodes,
-                edges: neighborEdges
-            })
+            nodeIds.forEach(n => graphData.nodesMap.get(n).expanded= true)
+            const newNodes = graphData.nodesList.concat(newNeighborNodes.filter((n:GraphNode) => !graphData.nodesMap.has(n.id)))
+            const newEdges = graphData.edgesList.concat(newNeighborEdges.filter((e:GraphEdge) => !graphData.edgesMap.has(e.id)))
+            setGraphData(new GraphData(newNodes, newEdges))
             setIsLoading(false);
         };
     }, [setGraphData, graphData, setIsLoading, parseRawNode, parseRawEdge]);
 
-    const removeNodeData = (nodeIds: Array<string>) => { //TODO: clear not expanded flag on neighbor nodes
-        const newNodes = graphData.nodes.filter((node: GraphNode) => !nodeIds.some(nodeId => nodeId == node.id))
-        const newEdges = graphData.edges.filter((edge: GraphEdge) => !nodeIds.some(nodeId => nodeId == edge.source || nodeId == edge.target))
-        setGraphData({
-            nodes: newNodes,
-            edges: newEdges
+    const removeNodeData = (nodeIds: Array<string>) => {
+        const [newEdges, removedEdges] = bifurcateBy(graphData.edgesList, (edge) => !nodeIds.some(nodeId => nodeId == edge.source || nodeId == edge.target))
+        removedEdges.forEach(e => {
+            graphData.nodesMap.get(e.source).expanded = false
+            graphData.nodesMap.get(e.target).expanded = false
         })
+        nodeIds.forEach(nodeId => graphData.nodesMap.delete(nodeId))
+        setGraphData(new GraphData(graphData.nodesMap, newEdges))
     };
 
     const removeEdgeData = (edgeIds: Array<string>) => { //TODO: clear not expanded flag on neighbor nodes
-        const newEdges = graphData.edges.filter((edge: GraphEdge) => !edgeIds.some(nodeId => nodeId == edge.id))
-        setGraphData({
-            nodes: graphData.nodes,
-            edges: newEdges
+        edgeIds.forEach(edgeId => {
+            const edge = graphData.edgesMap.get(edgeId)
+            graphData.nodesMap.get(edge.source).expanded = false
+            graphData.nodesMap.get(edge.target).expanded = false
         })
+        edgeIds.forEach(edgeId => graphData.edgesMap.delete(edgeId))
+        setGraphData(new GraphData(graphData.nodesMap, graphData.edgesMap))
     };
 
     const loadGraphData = useMemo(() => {
@@ -118,14 +113,11 @@ export function useGraphDataManager() {
             setIsLoading(true);
             const response = await fetch(`${SERVER_URL}/graph/${nodeIds.join(',')}`)
             const [rawNodes, rawEdges] = await response.json();
-            const newNodes = rawNodes.map(parseRawNode)
-            const newEdges = rawEdges.map(parseRawEdge)
-            const nodes = newNodes.concat(graphData.nodes.filter((a: GraphNode) => !newNodes.some((b: GraphNode) => b.id === a.id)))
-            const edges = newEdges.concat(graphData.edges.filter((a: GraphEdge) => !newEdges.some((b: GraphEdge) => b.id === a.id)))
-            setGraphData({
-                nodes: nodes,
-                edges: edges
-            })
+            const allNewNodes = rawNodes.map(parseRawNode)
+            const allNewEdges = rawEdges.map(parseRawEdge)
+            const newNodes = graphData.nodesList.concat(allNewNodes.filter((n:GraphNode) => !graphData.nodesMap.has(n.id)))
+            const newEdges = graphData.edgesList.concat(allNewEdges.filter((e:GraphEdge) => !graphData.edgesMap.has(e.id)))
+            setGraphData(new GraphData(newNodes, newEdges))
             setIsLoading(false);
         };
     }, [setGraphData, setIsLoading, parseRawNode, parseRawEdge, graphData]);
