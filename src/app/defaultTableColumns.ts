@@ -30,15 +30,18 @@ const EDGE_TYPE_COLUMN =
         filterSelectOptions: [EdgeType.transaction, EdgeType.connection]
     }
 
-const NODE_COLUMNS = ELEMENT_COLUMNS.concat([
-    {
-        id: 'expanded',
-        accessorKey: 'expandedText',
-        header: 'Is expanded',
-        filterVariant: 'text',
-        size: 200,
-    }
-])
+// const NODE_COLUMNS = ELEMENT_COLUMNS.concat([
+//     {
+//         id: 'expanded',
+//         accessorKey: 'expanded',
+//         header: 'Is expanded',
+//         filterVariant: 'checkbox',
+//         size: 200,
+//         Cell: ({cell}:any) => cell.getValue() ? 'yes' : 'no'
+//     } as any
+// ])
+
+const NODE_COLUMNS = ELEMENT_COLUMNS.concat([])
 
 const NODE_COLUMNS_W_TYPE= NODE_COLUMNS.concat([NODE_TYPE_COLUMN])
 
@@ -85,9 +88,10 @@ const EDGE_TRANSACTION_COLUMNS = EDGE_COLUMNS.concat([{
 }, { //convert to date for sorting and filtering
     id: 'timestampRepresentation',
     header: 'Time',
-    accessorKey: 'timestampRepresentation',
-    filterVariant: 'text',
+    accessorKey: 'timestamp',
+    filterVariant: 'datetime-range',
     size: 200,
+    Cell: ({row}:any) => row.original.timestampRepresentation
 }] as any)
     // filterVariant: 'datetime-range',
     // size: 400,

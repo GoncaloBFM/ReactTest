@@ -1,9 +1,18 @@
 .DashboardHeader {
-  padding: 5px;
+  background-color: #fff;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  padding-left: 16px;
+  padding-right: 16px;
+  height: 100%;
+
+  .headerStack {
+    height: 100%;
+    width: 100%;
+  }
 
   .logo {
-    margin: 10px;
-    align-content: center;
+    width: 100px;
+    height: 20px;
   }
 
   .dataPicker {

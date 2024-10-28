@@ -8,7 +8,7 @@ import {
     CardActions,
     CardContent,
     CardHeader, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-    IconButton, ListItemButton, ListItemIcon, Stack,
+    IconButton, ListItemButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip,
 } from "@mui/material";
 import {GraphManager} from "@/hooks/useGraphDataManager";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
@@ -26,8 +26,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import PersonIcon from '@mui/icons-material/Person';
 import Divider from '@mui/material/Divider';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-
-
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddchartIcon from '@mui/icons-material/Addchart';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import {ElementType} from "@/types/ElementType";
@@ -43,9 +42,11 @@ import {TransactionEdge} from "@/types/TransactionEdge";
 import {mean, quantile, std, sum} from "@/utils/math";
 import {datetimeToString, millisecondsToDHM} from "@/utils/time";
 import {sortAscend, sortDescend} from "@/utils/array";
+import {CytoscapeManager} from "@/hooks/useCytoscapeManager";
 
 type Props = {
-    selectedDataManager: SelectedDataManager;
+    selectedDataManager: SelectedDataManager
+    cytoscapeManager: CytoscapeManager
     graphManager: GraphManager
     graphData: GraphData
 };
@@ -58,6 +59,9 @@ export function DetailTab(props: Props) {
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
     const selectedElements = props.selectedDataManager.selectedElements;
     const setSelectedElements = props.selectedDataManager.setSelectedElements;
+
+    const [anchorElGraphLayoutControls, setAnchorElGraphLayoutControls] = useState<null | HTMLElement>(null);
+    const showGraphLayoutControls = Boolean(anchorElGraphLayoutControls);
 
     const data = useMemo(() => selectedElements.length == 0 && subSelectedElements.length == 0
             ? []
@@ -113,11 +117,10 @@ export function DetailTab(props: Props) {
             const outTransactions = new Array<TransactionEdge>()
             props.graphData.edgesList.forEach(e=> {
                     if (e.type == EdgeType.transaction) {
-                        if (nodeIds.includes(e.target)) {
+                        if (nodeIds.includes(e.target))
                             inTransactions.push(e as TransactionEdge)
-                        } else if (nodeIds.includes(e.source)) {
+                        if (nodeIds.includes(e.source))
                             outTransactions.push(e as TransactionEdge)
-                        }
                     }
                 }
             )
@@ -152,30 +155,58 @@ export function DetailTab(props: Props) {
     }
 
     return (
-            <Card className={styles.DetailTab}>
-                <CardHeader className={styles.cardHeader}
-                            avatar={
-                                <Image src={networkIcon} alt='' className={styles.image}/>
-                            }
-                            title='Graph constrols'
-                            subheader={
-                    data.length == 0
-                        ? `${props.graphData.nodesMap.size} nodes, ${props.graphData.edgesMap.size} relations`
-                        : `${data.length} element${data.length == 1 ? '' : 's'} selected`
-                }
-                />
-                <CardActions>
-                    <Stack direction={'row'} width={'100%'} justifyContent={data.length > 0 ? "space-between" : 'right'}>
-                        {data.length > 0 &&
-                            <Stack direction={'row'}>
+        <Card className={styles.DetailTab}>
+            <CardHeader className={styles.cardHeader}
+                        avatar={
+                            <Image src={networkIcon} alt='' className={styles.image}/>
+                        }
+                        title='Graph constrols'
+
+                        subheader={
+                            data.length == 0
+                                ? `${props.graphData.nodesMap.size} nodes, ${props.graphData.edgesMap.size} relations`
+                                : `${data.length} element${data.length == 1 ? '' : 's'} selected`
+                        }
+                        action={
+                            <IconButton aria-label="settings" onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                                setAnchorElGraphLayoutControls(event.currentTarget);
+                            }}>
+                                <MoreVertIcon />
+                            </IconButton>
+                        }
+            />
+            <Menu
+                open={showGraphLayoutControls}
+                anchorEl={anchorElGraphLayoutControls}
+                onClose={() => {setAnchorElGraphLayoutControls(null)}}
+            >
+                <MenuItem onClick={() => {
+                    props.cytoscapeManager.rerunLayout()
+                    setAnchorElGraphLayoutControls(null)
+                }}>Rerun layout</MenuItem>
+                <MenuItem onClick={() => {
+                    props.cytoscapeManager.cy?.fit()
+                    setAnchorElGraphLayoutControls(null)
+                }}>Center on graph</MenuItem>
+            </Menu>
+            <CardActions>
+                <Stack direction={'row'} width={'100%'} justifyContent={data.length > 0 ? "space-between" : 'right'}>
+                    {data.length > 0 &&
+                        <Stack direction={'row'}>
+                            <Tooltip title="Show statistics">
                                 <IconButton onClick={() => console.info('Edit')}>
                                     <AddchartIcon/>
                                 </IconButton>
-                                {data.length == 1 &&
+                            </Tooltip>
+                            {data.length == 1 &&
+
+                                <Tooltip title="Show data">
                                     <IconButton onClick={() => console.info('Edit')}>
                                         <ZoomInIcon/>
                                     </IconButton>
-                                }
+                                </Tooltip>
+                            }
+                            <Tooltip title="Select neighbors">
                                 <IconButton  onClick={() => {
                                     if (data[0].elementType == ElementType.node) {
                                         const nodeIds = data.map(e => e.id)
@@ -191,71 +222,55 @@ export function DetailTab(props: Props) {
                                 }}>
                                     <TrackChangesIcon/>
                                 </IconButton>
-                                {data[0].elementType == ElementType.node && //TODO: only allow for this when possible
-                                    [
+                            </Tooltip>
+                            {data[0].elementType == ElementType.node && //TODO: only allow for this when possible
+                                [
 
-                                        <IconButton key='1' onClick={() => {
+                                    <Tooltip key='1' title="Select outbound transactions">
+                                        <IconButton onClick={() => {
                                             const nodeIds = data.map(e => e.id)
                                             setSelectedElements(props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.source)))
                                             //TODO: ^ this is slow, improve performance
                                         }}>
                                             <CallMadeIcon/>
-                                        </IconButton>,
-                                        <IconButton key='3' onClick={() => {
+                                        </IconButton>
+                                    </Tooltip>,
+                                    <Tooltip key='2' title="Select inbound transactions">
+                                        <IconButton onClick={() => {
                                             const nodeIds = data.map(e => e.id)
                                             setSelectedElements(props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.target)))
                                             //TODO: ^ this is slow, improve performance
                                         }}>
                                             <CallReceivedIcon/>
-                                        </IconButton>,
-                                        <IconButton key='2' onClick={() => {props.graphManager.expandNodeData(data.map(e => e.id))}}>
+                                        </IconButton>
+                                    </Tooltip>,
+                                    <Tooltip key='3' title="Expand nodes">
+                                        <IconButton onClick={() => {props.graphManager.expandNodeData(data.map(e => e.id))}}>
                                             <AllOutIcon/>
                                         </IconButton>
-                                    ]
-                                }
-                            </Stack>
-                        }
-                        {(props.graphData.nodesMap.size > 0 || props.graphData.nodesMap.size > 0) &&
-                            <IconButton onClick={() => {
-                                if (data.length == 0) {
-                                    setOpenDeleteGraphPopup(true)
-                                } else if (data[0].elementType == ElementType.node) {
-                                    props.graphManager.removeNodeData(data.map(e => e.id))
-                                } else {
-                                    props.graphManager.removeEdgeData(data.map(e => e.id))
-                                }
-                            }}>
-                                <DeleteOutlineIcon/>
-                            </IconButton>
-                        }
-                    </Stack>
-                </CardActions>
-                <Dialog
-                    open={openDeleteGraphPopup}
-                    onClose={() => setOpenDeleteGraphPopup(false)}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                    <DialogTitle id="alert-dialog-title">
-                        Delete graph
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-description">
-                            The entire graph will be deleted, are you sure you want to proceed?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={
-                            () => {
-                                props.graphManager.removeEdgeData(props.graphData.edgesList.map(e => e.id))
-                                props.graphManager.removeNodeData(props.graphData.nodesList.map(e => e.id))
-                                setOpenDeleteGraphPopup(false)
+                                    </Tooltip>
+                                ]
                             }
-                        }>Confirm</Button>
-                        <Button onClick={() => setOpenDeleteGraphPopup(false)} autoFocus>Cancel</Button>
-                    </DialogActions>
-                </Dialog>
-                <Divider />
+                        </Stack>
+                    }
+                    <Tooltip title='Delete element'>
+                        <IconButton onClick={() => {
+                            if (data.length == 0) {
+                                setOpenDeleteGraphPopup(true)
+                            } else if (data[0].elementType == ElementType.node) {
+                                props.graphManager.removeNodeData(data.map(e => e.id))
+                            } else {
+                                props.graphManager.removeEdgeData(data.map(e => e.id))
+                            }
+                        }}>
+                            <DeleteOutlineIcon/>
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+            </CardActions>
+
+            <Divider />
+
                 <CardHeader className={styles.cardHeader}
                             avatar={
                                 <Image src={statsIcon} alt='' className={styles.image}/>
@@ -273,6 +288,33 @@ export function DetailTab(props: Props) {
                         : summary(data.length > 0 ? data : props.graphData.edgesList)
                     }
                 </CardContent>
+
+            <Dialog
+                open={openDeleteGraphPopup}
+                onClose={() => setOpenDeleteGraphPopup(false)}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    Delete graph
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        The entire graph will be deleted, are you sure you want to proceed?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={
+                        () => {
+                            props.graphManager.removeEdgeData(props.graphData.edgesList.map(e => e.id))
+                            props.graphManager.removeNodeData(props.graphData.nodesList.map(e => e.id))
+                            setOpenDeleteGraphPopup(false)
+                        }
+                    }>Confirm</Button>
+                    <Button onClick={() => setOpenDeleteGraphPopup(false)} autoFocus>Cancel</Button>
+                </DialogActions>
+            </Dialog>
             </Card>
+
     );
 }
