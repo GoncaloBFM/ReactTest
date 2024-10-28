@@ -51,7 +51,7 @@ export function DashboardHeader(props: Props) {
                 </Button>
                 <Divider orientation="vertical" variant="middle" flexItem/>
                 <Button variant="outlined" size={'small'} onClick={() => {
-                    props.cytoscapeManager.reRunLayout()
+                    props.cytoscapeManager.rerunLayout()
                 }}>
                     <RestartAltIcon/> Rerun layout
                 </Button>

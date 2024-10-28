@@ -11,21 +11,26 @@ export const CyLayouts = {
 
 type CyLayoutValue = (typeof CyLayouts)[keyof typeof CyLayouts];
 
-export function useCytoscapeManager(graphData: GraphData) {
+export function useCytoscapeManager() {
     const [layout, setLayout] = useState<CyLayoutValue>(CyLayouts.COSE_LAYOUT);
+    const [layoutStateCounter, setLayoutStateCounter] = useState(0)
     const [cy, setCy] = useState<cytoscape.Core | null>(null);
 
     const runLayout = useCallback((layout: CyLayoutValue) => {
         cy?.layout(layout).run();
     }, [cy])
 
-    const reRunLayout = useCallback(() => {
+    const rerunLayout = useCallback(() => {
         runLayout(layout)
     }, [runLayout, layout])
 
+    const rerunLayoutAfterRender = useCallback(() => {
+        setLayoutStateCounter((prev) => prev + 1)
+    }, [setLayoutStateCounter])
+
     useEffect(() => {
-        runLayout(layout)
-    }, [runLayout, layout, graphData])
+         rerunLayout()
+    }, [layoutStateCounter, rerunLayout])
 
     return {
         cy,
@@ -36,15 +41,8 @@ export function useCytoscapeManager(graphData: GraphData) {
         }, [cy]),
 
         setLayout: setLayout,
-        reRunLayout: reRunLayout,
+        rerunLayout: rerunLayout,
+        rerunLayoutAfterRender: rerunLayoutAfterRender,
         layout: layout,
-        setSelectedElement: useCallback((selectedElement: GraphNode) => {
-            cy?.elements().deselect();
-
-            if (selectedElement) {
-                cy?.elements(`node[id="${selectedElement.id}"]`).select();
-            }
-        }, [cy]),
-
     } as const;
 }

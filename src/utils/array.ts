@@ -6,3 +6,6 @@ export const bifurcateBy = <T>(arr: Array<T>, fn: (e: T)=>boolean): [Array<T>, A
     },
     [new Array<T>(), new Array<T>()]
   );
+
+export const sortAscend = (arr: number[]) => arr.sort((a, b) => a - b);
+export const sortDescend = (arr: number[]) => arr.sort((a, b) => b - a);

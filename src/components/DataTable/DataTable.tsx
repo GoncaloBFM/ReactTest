@@ -1,7 +1,7 @@
 import React, {Dispatch, Fragment, SetStateAction, useEffect, useMemo, useState} from 'react';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import 'dayjs/locale/en';
-
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 
 import {
     MaterialReactTable,
@@ -12,21 +12,19 @@ import {
     useMaterialReactTable,
 } from 'material-react-table';
 
-
 //Icons Imports
 import {GraphData} from "@/types/GraphData";
 import {GraphElement} from "@/types/GraphElement";
 import styles from './DataTable.module.scss'
 import {ElementType} from '@/types/ElementType';
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
-import {Box, Button, FormControl, MenuItem, Select, Stack} from "@mui/material";
+import {Box, Button, FormControl, IconButton, MenuItem, Select, Stack, Typography} from "@mui/material";
 import {GraphManager} from "@/hooks/useGraphDataManager";
-import OpenWithIcon from "@mui/icons-material/OpenWith";
-import ClearIcon from "@mui/icons-material/Clear";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {EdgeType} from "@/types/EdgeType";
 import {NodeType} from "@/types/NodeType";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 type Props = {
     graphData: GraphData
@@ -43,7 +41,6 @@ export function DataTable(props: Props) {
     const selectedElements = props.selectedDataManager.selectedElements;
     const setSubSelectedElements = props.selectedDataManager.setSubSelectedElements;
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
-
 
     const [data, columns] = useMemo(() => {
         let data:GraphElement[]
@@ -105,7 +102,6 @@ export function DataTable(props: Props) {
         },
         enableColumnPinning: true,
         enableDensityToggle: false,
-        enableRowActions: false,
         enableRowSelection: true,
         positionToolbarAlertBanner: 'none',
         initialState: {
@@ -131,66 +127,52 @@ export function DataTable(props: Props) {
         },
         renderTopToolbarCustomActions: ({ table }) => (
             <Box sx={{ display: 'flex'}}>
-                {selectedElements.length == 0 &&
-                    <Stack direction="row" spacing={1}>
-                        <Select
-                            size="small"
-                            value={elementTypeTableFilter}
-                            onChange={event => {
-                                setElementTypeTableFilter(event.target.value)
-                                setTypeTableFilter(ALL_TYPE_TABLE_FILTER)
-                                setSelectedElements([])
-                            }}
-                        >
-                            <MenuItem value={ElementType.node}>Nodes</MenuItem>
-                            <MenuItem value={ElementType.edge}>Edges</MenuItem>
-                        </Select>
-                        <Select
-                            size="small"
-                            value={typeTableFilter}
-                            onChange={event => {
-                                setTypeTableFilter(event.target.value)
-                                setSelectedElements([])
-                            }}
-                        ><MenuItem value={ALL_TYPE_TABLE_FILTER}>All</MenuItem>
-                            {elementTypeTableFilter == ElementType.node
-                                ? [<MenuItem key={1} value={NodeType.person}>Persons</MenuItem>, <MenuItem key={2} value={NodeType.account}>Accounts</MenuItem>]
-                                : [<MenuItem key={3} value={EdgeType.transaction}>Transactions</MenuItem>, <MenuItem key={4} value={EdgeType.connection}>Connections</MenuItem>]
-                            }
-                        </Select>
-                        <Button size='small' onClick={() => {
-                            setSubSelectedElements(oldTableSelection => {
-                                const oldRowIdsSelected = new Set(oldTableSelection.map(e => e.id))
-                                return data.filter(e => !oldRowIdsSelected.has(e.id))
-                            })
-                        }}> Invert selection </Button>
-                    </Stack>
-                }
-                {selectedElements.length > 0 &&
-                    <Stack direction="row" spacing={1}>
-                        <Button onClick={() => {
-                            props.graphManager.expandNodeData(selectedElements.map(e => e.id));}
-                        } variant="outlined">
-                            <OpenWithIcon/>
-                        </Button>
-                        <Button onClick={() => {
-                            props.graphManager.removeNodeData(selectedElements.map(e => e.id))
-                            setSelectedElements([])
-                        }} variant="outlined">
-                            <ClearIcon/>
-                        </Button>
-                    </Stack>
-                }
-                {selectedElements.length > 0 &&
-                    <Stack direction="row" spacing={1}>
-                        <Button onClick={() => {
-                            props.graphManager.removeEdgeData(selectedElements.map(e => e.id))
-                            setSelectedElements([])
-                        }} variant="outlined">
-                            <ClearIcon/>
-                        </Button>
-                    </Stack>
-                }
+                <Stack direction="row" spacing={1}>
+                    {subSelectedElements.length > 0 &&
+                        [
+                            <Typography key={'1'} variant='subtitle1' className={styles.rowCounter}>
+                                {subSelectedElements.length} row{subSelectedElements.length > 1 ? 's' : ''} selected
+                            </Typography>,
+
+                            <Button key={'2'} size='small' onClick={() => {
+                                setSubSelectedElements(oldTableSelection => {
+                                    const oldRowIdsSelected = new Set(oldTableSelection.map(e => e.id))
+                                    return data.filter(e => !oldRowIdsSelected.has(e.id))
+                                })
+                            }}> Invert selection </Button>
+                        ]
+                    }
+                    {(subSelectedElements.length == 0 && selectedElements.length == 0) &&
+                        [
+                            <Select
+                                key={'1'}
+                                size="small"
+                                value={elementTypeTableFilter}
+                                onChange={event => {
+                                    setElementTypeTableFilter(event.target.value)
+                                    setTypeTableFilter(ALL_TYPE_TABLE_FILTER)
+                                    setSelectedElements([])
+                                }}
+                            >
+                                <MenuItem value={ElementType.node}>Nodes</MenuItem>
+                                <MenuItem value={ElementType.edge}>Edges</MenuItem>
+                            </Select>,
+                            <Select
+                                key={'2'}
+                                size="small"
+                                value={typeTableFilter}
+                                onChange={event => {
+                                    setTypeTableFilter(event.target.value)
+                                    setSelectedElements([])
+                                }}
+                            ><MenuItem value={ALL_TYPE_TABLE_FILTER}>All</MenuItem>
+                                {elementTypeTableFilter == ElementType.node
+                                    ? [<MenuItem key={1} value={NodeType.person}>Persons</MenuItem>, <MenuItem key={2} value={NodeType.account}>Accounts</MenuItem>]
+                                    : [<MenuItem key={3} value={EdgeType.transaction}>Transactions</MenuItem>, <MenuItem key={4} value={EdgeType.connection}>Connections</MenuItem>]
+                                }
+                            </Select>]
+                    }
+                </Stack>
             </Box>
         ),
         renderToolbarInternalActions: ({ table }) => (
@@ -214,9 +196,25 @@ export function DataTable(props: Props) {
 
             return newIdsList
         },
+        // enableRowActions: true,
+        // renderRowActions: ({ row }) => (
+        //     <Box>
+        //         <IconButton onClick={() => console.info('Edit')}>
+        //             <ZoomInIcon/>
+        //         </IconButton>
+        //         <IconButton onClick={() => {
+        //             if (subSelectedElements[0].elementType == ElementType.node) {
+        //                 props.graphManager.removeNodeData(subSelectedElements.map(e => e.id))
+        //             } else {
+        //                 props.graphManager.removeEdgeData(subSelectedElements.map(e => e.id))
+        //             }
+        //         }}>
+        //             <DeleteOutlineIcon/>
+        //         </IconButton>
+        //     </Box>
+        // ),
 
         getRowId: (e) => e.id,
-
         state: {
             rowSelection: getTableSelectedElementsRecord
         },

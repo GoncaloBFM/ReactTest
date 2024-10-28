@@ -84,7 +84,7 @@ export function GraphVisualization(props: Props) {
 
     const aggregateTransactionEdge = (edgesGroup: Array<TransactionEdge>, subSelectedIds: Set<string>) => {
         const amount = edgesGroup.reduce((amount, edge) => amount = amount + edge.amountPaid, 0)
-        const label = `( # ${edgesGroup.length} | ${amount.toFixed(2)} USD )`
+        const label = `( ${amount.toFixed(2)} USD | ${edgesGroup.length} )`
         const ids = edgesGroup.map(edge => edge.id)
 
         return {
@@ -144,7 +144,7 @@ export function GraphVisualization(props: Props) {
                 (selectedElements as GraphEdge[]).map(e => cy?.$(`#${e.source}${EDGE_ID_SEPARATOR}${e.target}`).addClass('manualEdgeSelect'))
             }
         }
-    }, [cy, selectedElements])
+    }, [cy, selectedElements]) //TODO: move selected to GraphElement class, update / clear it on setSelected
 
     const generateCytoscapeNodes = useCallback((nodes: Array<GraphNode>, subSelectedIds: Set<string>) => {
         return nodes.map(node => {

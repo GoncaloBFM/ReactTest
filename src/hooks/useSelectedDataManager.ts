@@ -24,10 +24,14 @@ export function useSelectedDataManager() {
     const [selectedElements, setSelectedElements] = useState<GraphElement[]>([]);
     const [subSelectedElements, setSubSelectedElements] = useState<GraphElement[]>([]);
 
+    //TODO: add back button for selections
+
     return {
         selectedElements,
         subSelectedElements,
-        setSubSelectedElements: setSubSelectedElements,
+        setSubSelectedElements: (e: Updater<any>) => {
+            setSubSelectedElements(e)
+        },
         setSelectedElements: (e: Updater<any>) => {
             setSubSelectedElements([])
             setSelectedElements(e)

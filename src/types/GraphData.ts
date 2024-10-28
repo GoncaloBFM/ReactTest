@@ -3,35 +3,27 @@ import {GraphEdge} from "@/types/GraphEdge";
 import {SafeMap} from "@/utils/SafeMap";
 
 export class GraphData {
-    private readonly nodes: SafeMap<string, GraphNode>
-    private readonly edges: SafeMap<string, GraphEdge>
+    readonly nodesMap: SafeMap<string, GraphNode>
+    readonly edgesMap: SafeMap<string, GraphEdge>
     constructor(nodes: Array<GraphNode> | SafeMap<string, GraphNode>, edges: Array<GraphEdge> | SafeMap<string, GraphEdge>) {
         if (nodes instanceof Array) {
-            this.nodes = new SafeMap(nodes.map(n => [n.id, n]))
+            this.nodesMap = new SafeMap(nodes.map(n => [n.id, n]))
         } else {
-            this.nodes = nodes
+            this.nodesMap = nodes
         }
 
         if (edges instanceof Array) {
-            this.edges = new SafeMap(edges.map(e => [e.id, e]))
+            this.edgesMap = new SafeMap(edges.map(e => [e.id, e]))
         } else {
-            this.edges = edges
+            this.edgesMap = edges
         }
     }
 
     get nodesList() {
-        return Array.from(this.nodes.values())
+        return Array.from(this.nodesMap.values())
     }
 
     get edgesList() {
-        return Array.from(this.edges.values())
-    }
-
-    get nodesMap() {
-        return this.nodes
-    }
-
-    get edgesMap() {
-        return this.edges
+        return Array.from(this.edgesMap.values())
     }
 }

@@ -18,8 +18,8 @@ export type GraphManager = {
     removeEdgeData: (nodeIds: Array<string>) => void
 }
 
-export function useGraphDataManager() {
-    const [isLoading, setIsLoading] = useState(false); //TODO: this
+export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDataRemoved: ()=>void) {
+    const [isLoading, setIsLoading] = useState(false); //TODO: ensure is loading stops all ui activity, also ui shouldn't be managed here
 
     const [graphData, setGraphData] = useState(new GraphData([], []));
 
@@ -85,6 +85,7 @@ export function useGraphDataManager() {
             const newEdges = graphData.edgesList.concat(newNeighborEdges.filter((e:GraphEdge) => !graphData.edgesMap.has(e.id)))
             setGraphData(new GraphData(newNodes, newEdges))
             setIsLoading(false);
+            afterGraphDataAdded()
         };
     }, [setGraphData, graphData, setIsLoading, parseRawNode, parseRawEdge]);
 
@@ -96,6 +97,7 @@ export function useGraphDataManager() {
         })
         nodeIds.forEach(nodeId => graphData.nodesMap.delete(nodeId))
         setGraphData(new GraphData(graphData.nodesMap, newEdges))
+        afterGraphDataRemoved()
     };
 
     const removeEdgeData = (edgeIds: Array<string>) => { //TODO: clear not expanded flag on neighbor nodes
@@ -106,6 +108,7 @@ export function useGraphDataManager() {
         })
         edgeIds.forEach(edgeId => graphData.edgesMap.delete(edgeId))
         setGraphData(new GraphData(graphData.nodesMap, graphData.edgesMap))
+        afterGraphDataRemoved()
     };
 
     const loadGraphData = useMemo(() => {
@@ -119,6 +122,7 @@ export function useGraphDataManager() {
             const newEdges = graphData.edgesList.concat(allNewEdges.filter((e:GraphEdge) => !graphData.edgesMap.has(e.id)))
             setGraphData(new GraphData(newNodes, newEdges))
             setIsLoading(false);
+            afterGraphDataAdded()
         };
     }, [setGraphData, setIsLoading, parseRawNode, parseRawEdge, graphData]);
 

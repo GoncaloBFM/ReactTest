@@ -1,6 +1,6 @@
 import React, {useMemo, useRef, useState} from "react";
 import styles from './DashboardLayout.module.scss'
-import {Grid} from "@mui/material";
+import {Box, Grid} from "@mui/material";
 import {DashboardHeader} from "../DashboardHeader/DashboardHeader";
 import {GraphVisualization} from "@/components/GraphVisualization/GraphVisualization";
 import {LoadingSpinner} from "../LoadingSpinner/LoadingSpinner";
@@ -12,10 +12,11 @@ import {useSelectedDataManager} from "@/hooks/useSelectedDataManager";
 import {DetailTab} from "@/components/DetailTab/DetailTab";
 
 
+
 export default function DashboardLayout() {
-    const {graphData, graphManager, isLoading} = useGraphDataManager()
+    const {graphData, graphManager, isLoading} = useGraphDataManager(() => {cytoscapeManager.rerunLayoutAfterRender()}, ()=>{selectedDataManager.setSelectedElements([])})
     const selectedDataManager = useSelectedDataManager()
-    const cytoscapeManager = useCytoscapeManager(graphData)
+    const cytoscapeManager = useCytoscapeManager()
 
     return (
         <div className={styles.DashboardLayout}>
@@ -24,17 +25,15 @@ export default function DashboardLayout() {
                 <DashboardHeader onSubmitLoadDataPopup={graphManager.loadGraphData}
                                  cytoscapeManager={cytoscapeManager}></DashboardHeader></div>
             <div className={styles.visualizations}>
-                <Grid container className={styles.top}>
-                    <Grid item xs={10}>
+                <div className={styles.top}>
                         <GraphVisualization
                             cytoscapeManager={cytoscapeManager}
                             selectedDataManager={selectedDataManager}
                             graphData={graphData}/>
-                    </Grid>
-                    <Grid item xs={2}>
-                        <DetailTab selectedDataManager={selectedDataManager} graphManager={graphManager}/>
-                    </Grid>
-                </Grid>
+                        <div className={styles.detailTab}>
+                        <DetailTab graphData={graphData} selectedDataManager={selectedDataManager} graphManager={graphManager}/>
+                        </div>
+                </div>
                 <div className={styles.bottom}>
                     <DataTable
                         graphData={graphData}

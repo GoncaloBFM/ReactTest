@@ -6,47 +6,64 @@ const ELEMENT_COLUMNS = [{
     id: 'id',
     accessorKey: 'id',
     header: 'Id',
-    filterVariant: 'autocomplete',
+    filterVariant: 'text',
+    size: 200,
 }]
 
-const TYPE_COLUMN =
- {
-    id: 'type',
-    accessorKey: 'type',
-    header: 'Type',
-    filterVariant: 'autocomplete',
-}
+const NODE_TYPE_COLUMN =
+    {
+        id: 'type',
+        accessorKey: 'type',
+        header: 'Type',
+        filterVariant: 'multi-select',
+        size: 200,
+        filterSelectOptions: [NodeType.account, NodeType.person]
+    }
+
+const EDGE_TYPE_COLUMN =
+    {
+        id: 'type',
+        accessorKey: 'type',
+        header: 'Type',
+        filterVariant: 'multi-select',
+        size: 200,
+        filterSelectOptions: [EdgeType.transaction, EdgeType.connection]
+    }
 
 const NODE_COLUMNS = ELEMENT_COLUMNS.concat([
     {
         id: 'expanded',
         accessorKey: 'expandedText',
         header: 'Is expanded',
-        filterVariant: 'autocomplete',
+        filterVariant: 'text',
+        size: 200,
     }
 ])
 
-const NODE_COLUMNS_W_TYPE= NODE_COLUMNS.concat([TYPE_COLUMN])
+const NODE_COLUMNS_W_TYPE= NODE_COLUMNS.concat([NODE_TYPE_COLUMN])
 
 const EDGE_COLUMNS = ELEMENT_COLUMNS.concat([{
     id: 'source',
     accessorKey: 'source',
     header: 'Source Id',
-    filterVariant: 'autocomplete',
+    filterVariant: 'text',
+    size: 200,
 }, {
     id: 'target',
     accessorKey: 'target',
     header: 'Target Id',
-    filterVariant: 'autocomplete',
+    filterVariant: 'text',
+    size: 200,
 }])
 
-const EDGE_COLUMNS_W_TYPE = EDGE_COLUMNS.concat([TYPE_COLUMN])
+const EDGE_COLUMNS_W_TYPE = EDGE_COLUMNS.concat([EDGE_TYPE_COLUMN])
 
 const NODE_PERSON_COLUMNS = NODE_COLUMNS.concat([{
     id: 'name',
     accessorKey: 'name',
     header: 'Full name',
-    filterVariant: 'autocomplete',
+    filterVariant: 'text',
+    size: 200,
 }])
 
 const NODE_ACCOUNT_COLUMNS = NODE_COLUMNS.concat([])
@@ -58,18 +75,19 @@ const EDGE_TRANSACTION_COLUMNS = EDGE_COLUMNS.concat([{
     accessorKey: 'amountPaid',
     header: 'Amount',
     filterVariant: 'range',
-    filterFn: 'between',
     size: 200,
 },{
     id: 'currencyPaid',
     accessorKey: 'currencyPaid',
     header: 'Currency',
-    filterVariant: 'autocomplete',
+    filterVariant: 'range',
+    size: 200,
 }, { //convert to date for sorting and filtering
-    id: 'timestamp',
+    id: 'timestampRepresentation',
     header: 'Time',
-    accessorKey: 'timestamp',
-    filterVariant: 'autocomplete',
+    accessorKey: 'timestampRepresentation',
+    filterVariant: 'text',
+    size: 200,
 }] as any)
     // filterVariant: 'datetime-range',
     // size: 400,
