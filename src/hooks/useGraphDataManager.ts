@@ -12,13 +12,13 @@ import {GraphData} from "@/types/GraphData";
 import {bifurcateBy} from "@/utils/array";
 
 export type GraphManager = {
-    expandNodeData: (nodeIds: Array<string>) => void,
+    expandNodeData: (nodeIds: Array<string>, callback?: (wasRemoved: boolean) => void) => void,
     removeNodeData: (nodeIds: Array<string>) => void,
     loadGraphData: (nodeIds: Array<string>) => void,
     removeEdgeData: (nodeIds: Array<string>) => void
 }
 
-export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDataRemoved: ()=>void) {
+export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDataRemoved: () => void) {
     const [isLoading, setIsLoading] = useState(false); //TODO: ensure is loading stops all ui activity, also ui shouldn't be managed here
 
     const [graphData, setGraphData] = useState(new GraphData([], []));
@@ -54,7 +54,7 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
             )
 
         throw new Error(`Unknown edge type ${rawEdge['type']}`)
-    }, [])
+    }, [dataFields])
 
     const parseRawNode = useCallback((rawNode: {[key:string]: string}): GraphNode => {
         if (rawNode['type'] == NodeType.person)
@@ -71,10 +71,10 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
             );
 
         throw new Error(`Unknown node type ${rawNode['type']}`)
-    }, [])
+    }, [dataFields])
 
     const expandNodeData = useMemo(() => {
-        return async (nodeIds: Array<string>) => {
+        return async (nodeIds: Array<string>, callback?: (wasAdded: boolean)=>void) => {
             setIsLoading(true);
             const response = await fetch(`${SERVER_URL}/neighbors/${nodeIds.join(',')}`)
             const [rawNeighborNodes, rawNeighborEdges] = await response.json();
@@ -85,9 +85,14 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
             const newEdges = graphData.edgesList.concat(newNeighborEdges.filter((e:GraphEdge) => !graphData.edgesMap.has(e.id)))
             setGraphData(new GraphData(newNodes, newEdges))
             setIsLoading(false);
-            afterGraphDataAdded()
+            const wasAdded = newNodes.length > 1 || newEdges.length > 1
+            if (wasAdded)
+                afterGraphDataAdded()
+            if (callback != undefined)
+                callback(wasAdded)
+
         };
-    }, [setGraphData, graphData, setIsLoading, parseRawNode, parseRawEdge]);
+    }, [setGraphData, graphData, setIsLoading, parseRawNode, parseRawEdge, afterGraphDataAdded]);
 
     const removeNodeData = (nodeIds: Array<string>) => {
         const [newEdges, removedEdges] = bifurcateBy(graphData.edgesList, (edge) => !nodeIds.some(nodeId => nodeId == edge.source || nodeId == edge.target))
@@ -97,10 +102,10 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
         })
         nodeIds.forEach(nodeId => graphData.nodesMap.delete(nodeId))
         setGraphData(new GraphData(graphData.nodesMap, newEdges))
-        afterGraphDataRemoved()
+        afterGraphDataRemoved() //TODO: only call this when stuff was removed
     };
 
-    const removeEdgeData = (edgeIds: Array<string>) => { //TODO: clear not expanded flag on neighbor nodes
+    const removeEdgeData = (edgeIds: Array<string>) => {
         edgeIds.forEach(edgeId => {
             const edge = graphData.edgesMap.get(edgeId)
             graphData.nodesMap.get(edge.source).expanded = false

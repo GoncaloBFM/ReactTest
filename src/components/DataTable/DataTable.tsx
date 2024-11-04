@@ -33,7 +33,7 @@ type Props = {
 };
 
 const ALL_TYPE_TABLE_FILTER = 'all'
-
+//TODO: change time picker to match header
 export function DataTable(props: Props) {
     const [elementTypeTableFilter, setElementTypeTableFilter] = useState<string>(ElementType.edge)
     const [typeTableFilter, setTypeTableFilter] = useState<string>(ALL_TYPE_TABLE_FILTER)
@@ -91,11 +91,12 @@ export function DataTable(props: Props) {
         enableBottomToolbar: false,
         muiTableContainerProps: {
             sx: {
-                maxHeight: 'calc(100% - 56px)', //TODO: move this to a stylesheet
+                maxHeight: 'calc(100% - 56px)',
                 height: 'calc(100% - 56px)',
             },
         },
         muiTablePaperProps: {
+            elevation:0,
             sx: {
                 height: '100%',
             },
@@ -120,6 +121,7 @@ export function DataTable(props: Props) {
         },
 
         manualPagination: true,
+        enableRowVirtualization: true,
         muiPaginationProps: {
             color: 'secondary',
             shape: 'rounded',

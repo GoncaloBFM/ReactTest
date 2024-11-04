@@ -1,7 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import cytoscape from "cytoscape";
-import {GraphNode} from "@/types/GraphNode";
-import {GraphData} from "@/types/GraphData";
 
 export type CytoscapeManager = ReturnType<typeof useCytoscapeManager>;
 

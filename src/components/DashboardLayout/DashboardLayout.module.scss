@@ -1,7 +1,7 @@
 .DashboardLayout {
   height: 100vh;
   display: grid;
-  grid-template-rows: 44px 1fr;
+  grid-template-rows: 50px 1fr;
   overflow: hidden;
   z-index: 0;
 
@@ -9,26 +9,38 @@
   }
 
   .graph {
-    width: 50%;
+    width: 70%;
     height: 100%;
   }
 
   .histogram {
-    width: 50%;
-    height: 100%;
+    width: 100%;
+    height: 50%;
   }
 
   .detailTab {
-            width: 300px;
-            position: absolute;
-            top: 0;
-            right: 0;
+    width: 48px;
+    margin-top:1px;
+    position: absolute;
+    top: 0;
+    left: 0;
 
+  }
+  .summary {
+    width: 100%;
+    height: 50%;
   }
 
   .topSplitPanel{
     height: 100%;
     width: 100%;
+  }
+
+  .rightSplitPanel{
+    padding-top: 2px;
+    box-sizing: border-box;
+    height: 100%;
+    width: 30%;
   }
 
   .visualizations {

@@ -5,6 +5,8 @@ import cytoscape from 'cytoscape';
 // @ts-ignore
 import COSEBilkent from 'cytoscape-cose-bilkent';
 // @ts-ignore
+import cola from 'cytoscape-cola';
+// @ts-ignore
 import {CYTOSCAPE_STYLESHEET} from './CytoscapeStylesheet';
 import {CytoscapeManager} from '@/hooks/useCytoscapeManager';
 import {GraphData} from "@/types/GraphData";
@@ -19,8 +21,6 @@ import {NodeType} from "@/types/NodeType";
 import {PersonNode} from "@/types/PersonNode";
 // @ts-ignore
 import compoundDragAndDrop from 'cytoscape-compound-drag-and-drop';
-import {Exception} from "sass";
-import {string} from "prop-types";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 
 cytoscape.use(compoundDragAndDrop);

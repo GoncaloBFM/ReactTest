@@ -39,13 +39,12 @@ export function LoadDataPopup(props: Props) {
                     <Stack direction="row" spacing={1}>
                         <TextField id="outlined-basic" label="Person name" onChange={e => setPersonName(e.target.value)}
                                    variant="outlined"/>
-                        <Button variant="outlined" size={'small'} onClick={() => {
+                        <Button disabled={personName.length == 0} variant="outlined" size={'small'} onClick={() => {
                             personName && !isLoading && doLoadDataPopupSearch(personName)
                         }}>Search</Button>
-                        <Button variant="outlined" size={'small'}> Advanced Search</Button>
                     </Stack>
                     <Stack direction="row" spacing={1}>
-                        <Button variant="outlined" size={'small'} onClick={() => {
+                        <Button disabled={dataSelected.length == 0} variant="outlined" size={'small'} onClick={() => {
                             props.onSubmit(dataSelected);
                             closePopup();
                         }}>Add to graph</Button>

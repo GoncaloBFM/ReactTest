@@ -20,7 +20,7 @@ export type SelectedDataManager = {
     subSelectedElements: GraphElement[]
 }
 
-export function useSelectedDataManager() {
+export function useSelectedDataManager(afterDataIsSelected: ()=> void) {
     const [selectedElements, setSelectedElements] = useState<GraphElement[]>([]);
     const [subSelectedElements, setSubSelectedElements] = useState<GraphElement[]>([]);
 
@@ -31,10 +31,12 @@ export function useSelectedDataManager() {
         subSelectedElements,
         setSubSelectedElements: (e: Updater<any>) => {
             setSubSelectedElements(e)
+            afterDataIsSelected()
         },
         setSelectedElements: (e: Updater<any>) => {
             setSubSelectedElements([])
             setSelectedElements(e)
+            afterDataIsSelected()
         },
     } as SelectedDataManager
 }

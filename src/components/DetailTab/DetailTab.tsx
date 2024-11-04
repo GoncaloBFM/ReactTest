@@ -1,4 +1,4 @@
-import React, {SetStateAction, useEffect, useMemo, useState} from 'react';
+import React, {Dispatch, SetStateAction, useEffect, useMemo, useState} from 'react';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import {
@@ -16,7 +16,6 @@ import Image from 'next/image'
 import styles from './DetailTab.module.scss'
 import personIcon from '../../../public/person.svg'
 import accountIcon from '../../../public/account.svg'
-import statsIcon from '../../../public/stats.svg'
 import networkIcon from '../../../public/network.svg'
 import {GraphElement} from "@/types/GraphElement";
 import {GraphData} from "@/types/GraphData";
@@ -43,6 +42,10 @@ import {mean, quantile, std, sum} from "@/utils/math";
 import {datetimeToString, millisecondsToDHM} from "@/utils/time";
 import {sortAscend, sortDescend} from "@/utils/array";
 import {CytoscapeManager} from "@/hooks/useCytoscapeManager";
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+
+import {AttachMoney, CallSplit} from "@mui/icons-material";
 
 type Props = {
     selectedDataManager: SelectedDataManager
@@ -54,241 +57,143 @@ type Props = {
 export function DetailTab(props: Props) {
 
     const [openDeleteGraphPopup, setOpenDeleteGraphPopup] = useState(false);
-    const [showSummary, setShowSummary] = useState(false)
-
+    const [openNoDataPopup, setOpenNoDataPopup] = useState(false);
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
     const selectedElements = props.selectedDataManager.selectedElements;
     const setSelectedElements = props.selectedDataManager.setSelectedElements;
-
-    const [anchorElGraphLayoutControls, setAnchorElGraphLayoutControls] = useState<null | HTMLElement>(null);
-    const showGraphLayoutControls = Boolean(anchorElGraphLayoutControls);
 
     const data = useMemo(() => selectedElements.length == 0 && subSelectedElements.length == 0
             ? []
             : subSelectedElements.length == 0 ? selectedElements : subSelectedElements,
         [selectedElements, subSelectedElements])
 
-
-    useEffect(()=> {
-        setShowSummary(false)
-    }, [selectedElements, subSelectedElements, props.graphData])
-
-    const summary = (data: GraphElement[]) => {
-        //TODO: Fix NaNs when only one account is selected
-        if (data[0].elementType == ElementType.edge) {
-            const transactions = data.filter(edge => edge.type == EdgeType.transaction) as TransactionEdge[]
-            const transactionAmounts = transactions.map(edge => edge.amountPaid)
-            const transactionsMils = sortDescend(transactions.map(edge => edge.timestamp.getTime()))
-            const totalTimeElapsed = millisecondsToDHM(transactionsMils[0] - transactionsMils[transactionsMils.length - 1])
-            const timeDifferencePairs = new Array<number>()
-            for(let i=0; i < transactionsMils.length - 1; i++){
-                timeDifferencePairs.push(transactionsMils[i] - transactionsMils[i + 1])
-            }
-            const avgTimeElapsed = millisecondsToDHM(mean(timeDifferencePairs))
-
-            return <List dense={true}>
-                <ListItemButton>
-                    <ListItemText primary={'Number of transactions'} secondary={transactionAmounts.length}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Total money transferred'}
-                                  secondary={sum(transactionAmounts).toFixed(2) + ' USD'}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Average amount transferred'}
-                                  secondary={mean(transactionAmounts).toFixed(2) + ' USD'}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'STD of amount transferred'}
-                                  secondary={std(transactionAmounts).toFixed(2) + ' USD'}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Total time between transactions'} secondary={`${totalTimeElapsed.days} days; ${totalTimeElapsed.hours} hour; ${totalTimeElapsed.minutes} min`}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Average time between transactions'} secondary={
-                        `${avgTimeElapsed.days} days; ${avgTimeElapsed.hours} hour; ${avgTimeElapsed.minutes} min`
-                    }/>
-                </ListItemButton>
-            </List>
-        } else {
-            const nodeIds = data.map(node => node.id)
-            const inTransactions = new Array<TransactionEdge>()
-            const outTransactions = new Array<TransactionEdge>()
-            props.graphData.edgesList.forEach(e=> {
-                    if (e.type == EdgeType.transaction) {
-                        if (nodeIds.includes(e.target))
-                            inTransactions.push(e as TransactionEdge)
-                        if (nodeIds.includes(e.source))
-                            outTransactions.push(e as TransactionEdge)
-                    }
-                }
-            )
-            const inTransactionsAmounts = inTransactions.map(e => e.amountPaid)
-            const outTransactionsAmounts = outTransactions.map(e => e.amountPaid)
-            const totalInTransactionsAmounts = sum(inTransactionsAmounts)
-            const totalOutTransactionsAmounts = sum(outTransactionsAmounts)
-            const transactionsMils = inTransactions.concat(outTransactions).map(edge => edge.timestamp.getTime())
-            const totalTimeElapsed = millisecondsToDHM(Math.max(...transactionsMils) - Math.min(...transactionsMils))
-
-            return <List dense={true}>
-                <ListItemButton>
-                    <ListItemText primary={'Number of outbound transactions'} secondary={outTransactionsAmounts.length}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Number of inbound transactions'} secondary={inTransactionsAmounts.length}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Total amount outbound transactions'} secondary={totalInTransactionsAmounts.toFixed(2) + ' USD'}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Total amount inbound transactions'} secondary={totalOutTransactionsAmounts.toFixed(2) + ' USD'}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Net transactions (what to call this?)'} secondary={(totalInTransactionsAmounts - totalOutTransactionsAmounts).toFixed(2) + ' USD'}/>
-                </ListItemButton>
-                <ListItemButton>
-                    <ListItemText primary={'Total time between all transactions'} secondary={`${totalTimeElapsed.days} days; ${totalTimeElapsed.hours} hour; ${totalTimeElapsed.minutes} min`}/>
-                </ListItemButton>
-            </List>
-        }
-    }
-
     return (
-        <Card className={styles.DetailTab}>
-            <CardHeader className={styles.cardHeader}
-                        avatar={
-                            <Image src={networkIcon} alt='' className={styles.image}/>
+        <Stack className={styles.DetailTab} direction="column">
+            <Tooltip title="Load neighbors from database">
+                <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
+                    props.graphManager.expandNodeData(data.map(e => e.id))
+                }}>
+                    <AllOutIcon/>
+                </IconButton>
+            </Tooltip>
+            <Divider/>
+            <Tooltip title="Show data">
+                <IconButton
+                    // disabled={data.length != 1}
+                    disabled
+                    onClick={() => {}}
+                >
+                    <ZoomInIcon/>
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Show statistics">
+                <IconButton
+                    // disabled={props.graphData.edgesList.length == 0 || (data.length == 1 && data[0].elementType == ElementType.edge)}
+                    disabled
+                    onClick={() => {}}
+                >
+                    <BarChartIcon/>
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Flow analysis">
+                <IconButton disabled onClick={() => {}}>
+                    <CallSplit/>
+                </IconButton>
+            </Tooltip>
+            <Divider/>
+            <Tooltip title="Select neighbors">
+                <IconButton  disabled={data.length == 0} onClick={() => {
+                    if (data[0].elementType == ElementType.node) {
+                        const nodeIds = data.map(e => e.id)
+                        const result = props.graphData.edgesList.filter(e => nodeIds.includes(e.source) || nodeIds.includes(e.target))
+                        if (result.length == 0) {
+                            setOpenNoDataPopup(true)
+                            return
                         }
-                        title='Graph constrols'
-
-                        subheader={
-                            data.length == 0
-                                ? `${props.graphData.nodesMap.size} nodes, ${props.graphData.edgesMap.size} relations`
-                                : `${data.length} element${data.length == 1 ? '' : 's'} selected`
+                        setSelectedElements(result)
+                        //TODO: ^ this is slow, improve performance
+                    } else {
+                        const edges = data as GraphEdge[]
+                        const neighbors = edges.reduce((prev:GraphNode[], edge: GraphEdge) =>
+                                prev.concat([props.graphData.nodesMap.get(edge.source), props.graphData.nodesMap.get(edge.target)])
+                            , [])
+                        if (neighbors.length == 0) {
+                            setOpenNoDataPopup(true)
+                            return
                         }
-                        action={
-                            <IconButton aria-label="settings" onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                                setAnchorElGraphLayoutControls(event.currentTarget);
-                            }}>
-                                <MoreVertIcon />
-                            </IconButton>
-                        }
-            />
-            <Menu
-                open={showGraphLayoutControls}
-                anchorEl={anchorElGraphLayoutControls}
-                onClose={() => {setAnchorElGraphLayoutControls(null)}}
-            >
-                <MenuItem onClick={() => {
-                    props.cytoscapeManager.rerunLayout()
-                    setAnchorElGraphLayoutControls(null)
-                }}>Rerun layout</MenuItem>
-                <MenuItem onClick={() => {
-                    props.cytoscapeManager.cy?.fit()
-                    setAnchorElGraphLayoutControls(null)
-                }}>Center on graph</MenuItem>
-            </Menu>
-            <CardActions>
-                <Stack direction={'row'} width={'100%'} justifyContent={data.length > 0 ? "space-between" : 'right'}>
-                    {data.length > 0 &&
-                        <Stack direction={'row'}>
-                            <Tooltip title="Show statistics">
-                                <IconButton onClick={() => console.info('Edit')}>
-                                    <AddchartIcon/>
-                                </IconButton>
-                            </Tooltip>
-                            {data.length == 1 &&
-
-                                <Tooltip title="Show data">
-                                    <IconButton onClick={() => console.info('Edit')}>
-                                        <ZoomInIcon/>
-                                    </IconButton>
-                                </Tooltip>
-                            }
-                            <Tooltip title="Select neighbors">
-                                <IconButton  onClick={() => {
-                                    if (data[0].elementType == ElementType.node) {
-                                        const nodeIds = data.map(e => e.id)
-                                        setSelectedElements(props.graphData.edgesList.filter(e => nodeIds.includes(e.source) || nodeIds.includes(e.target)))
-                                        //TODO: ^ this is slow, improve performance
-                                    } else {
-                                        const edges = data as GraphEdge[]
-                                        const neighbors = edges.reduce((prev:GraphNode[], edge: GraphEdge) =>
-                                                prev.concat([props.graphData.nodesMap.get(edge.source), props.graphData.nodesMap.get(edge.target)])
-                                            , [])
-                                        setSelectedElements(neighbors)
-                                    }
-                                }}>
-                                    <TrackChangesIcon/>
-                                </IconButton>
-                            </Tooltip>
-                            {data[0].elementType == ElementType.node && //TODO: only allow for this when possible
-                                [
-
-                                    <Tooltip key='1' title="Select outbound transactions">
-                                        <IconButton onClick={() => {
-                                            const nodeIds = data.map(e => e.id)
-                                            setSelectedElements(props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.source)))
-                                            //TODO: ^ this is slow, improve performance
-                                        }}>
-                                            <CallMadeIcon/>
-                                        </IconButton>
-                                    </Tooltip>,
-                                    <Tooltip key='2' title="Select inbound transactions">
-                                        <IconButton onClick={() => {
-                                            const nodeIds = data.map(e => e.id)
-                                            setSelectedElements(props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.target)))
-                                            //TODO: ^ this is slow, improve performance
-                                        }}>
-                                            <CallReceivedIcon/>
-                                        </IconButton>
-                                    </Tooltip>,
-                                    <Tooltip key='3' title="Expand nodes">
-                                        <IconButton onClick={() => {props.graphManager.expandNodeData(data.map(e => e.id))}}>
-                                            <AllOutIcon/>
-                                        </IconButton>
-                                    </Tooltip>
-                                ]
-                            }
-                        </Stack>
+                        setSelectedElements(neighbors)
                     }
-                    <Tooltip title='Delete element'>
-                        <IconButton onClick={() => {
-                            if (data.length == 0) {
-                                setOpenDeleteGraphPopup(true)
-                            } else if (data[0].elementType == ElementType.node) {
-                                props.graphManager.removeNodeData(data.map(e => e.id))
-                            } else {
-                                props.graphManager.removeEdgeData(data.map(e => e.id))
-                            }
-                        }}>
-                            <DeleteOutlineIcon/>
-                        </IconButton>
-                    </Tooltip>
-                </Stack>
-            </CardActions>
-
-            <Divider />
-
-                <CardHeader className={styles.cardHeader}
-                            avatar={
-                                <Image src={statsIcon} alt='' className={styles.image}/>
-                            }
-                            title='Transactions summary'
-                            subheader={data.length > 0 ? 'of selection' : 'of graph'}
-                />
-                <CardContent className={styles.summary}>
-                    {!showSummary
-                        ? <Box className={styles.runContainer}>
-                            <Button disabled={props.graphData.edgesList.length == 0 || (data.length == 1 && data[0].elementType == ElementType.edge)} endIcon={<PlayArrowIcon/>} onClick={() => {setShowSummary(true)}}>
-                                Run
-                            </Button>
-                        </Box>
-                        : summary(data.length > 0 ? data : props.graphData.edgesList)
+                }}>
+                    <TrackChangesIcon/>
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Select all transactions">
+                <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
+                    const nodeIds = data.map(e => e.id)
+                    const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && (nodeIds.includes(e.source) || nodeIds.includes(e.target)))
+                    if (result.length == 0) {
+                        setOpenNoDataPopup(true)
+                        return
                     }
-                </CardContent>
-
+                    setSelectedElements(result)
+                    //TODO: ^ this is slow, improve performance
+                }}>
+                    <AttachMoney/>
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Select outbound transactions">
+                <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
+                    const nodeIds = data.map(e => e.id)
+                    const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.source))
+                    if (result.length == 0) {
+                        setOpenNoDataPopup(true)
+                        return
+                    }
+                    setSelectedElements(result)
+                    //TODO: ^ this is slow, improve performance
+                }}>
+                    <CallMadeIcon/>
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Select inbound transactions">
+                <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
+                    const nodeIds = data.map(e => e.id)
+                    const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.target))
+                    if (result.length == 0) {
+                        setOpenNoDataPopup(true)
+                        return
+                    }
+                    setSelectedElements(result)
+                    //TODO: ^ this is slow, improve performance
+                }}>
+                    <CallReceivedIcon/>
+                </IconButton>
+            </Tooltip>
+            <Divider/>
+            <Tooltip title="Rerun graph layout">
+                <IconButton onClick={() => {props.cytoscapeManager.rerunLayout()}}>
+                    <RestartAltIcon/>
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Center on graph">
+                <IconButton onClick={() => {props.cytoscapeManager.cy?.fit()}}>
+                    <CenterFocusStrongIcon/>
+                </IconButton>
+            </Tooltip>
+            <Divider/>
+            <Tooltip title='Delete element'>
+                <IconButton onClick={() => {
+                    if (data.length == 0) {
+                        setOpenDeleteGraphPopup(true)
+                    } else if (data[0].elementType == ElementType.node) {
+                        props.graphManager.removeNodeData(data.map(e => e.id))
+                    } else {
+                        props.graphManager.removeEdgeData(data.map(e => e.id))
+                    }
+                }}>
+                    <DeleteOutlineIcon/>
+                </IconButton>
+            </Tooltip>
             <Dialog
                 open={openDeleteGraphPopup}
                 onClose={() => setOpenDeleteGraphPopup(false)}
@@ -314,7 +219,19 @@ export function DetailTab(props: Props) {
                     <Button onClick={() => setOpenDeleteGraphPopup(false)} autoFocus>Cancel</Button>
                 </DialogActions>
             </Dialog>
-            </Card>
-
+            <Dialog
+                open={openNoDataPopup}
+                onClose={() => setOpenNoDataPopup(false)}
+            >
+                <DialogTitle>
+                    No data found
+                </DialogTitle>
+                <DialogActions>
+                    <Button onClick={() => setOpenNoDataPopup(false)} autoFocus>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Stack>
     );
 }
