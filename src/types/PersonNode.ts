@@ -10,8 +10,10 @@ export class PersonNode implements GraphNode {
     name: string;
     expanded:boolean;
     hidden:false;
+    nationality: string
+    address: string
 
-    constructor(id: string, name: string, data: {[key:string]: string}) {
+    constructor(id: string, name: string, nationality:string, address:string, data: {[key:string]: string}) {
         this.id = id
         this.type = NodeType.person
         this.elementType = ElementType.node
@@ -19,6 +21,8 @@ export class PersonNode implements GraphNode {
         this.name = name
         this.expanded = false
         this.hidden = false
+        this.nationality = nationality
+        this.address = address
     }
 
 }

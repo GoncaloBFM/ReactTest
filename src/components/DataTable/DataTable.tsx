@@ -89,6 +89,7 @@ export function DataTable(props: Props) {
         enableColumnFilterModes: true,
         columnFilterDisplayMode: 'popover',
         enableBottomToolbar: false,
+        enableRowVirtualization: true,
         muiTableContainerProps: {
             sx: {
                 maxHeight: 'calc(100% - 56px)',
@@ -121,7 +122,6 @@ export function DataTable(props: Props) {
         },
 
         manualPagination: true,
-        enableRowVirtualization: true,
         muiPaginationProps: {
             color: 'secondary',
             shape: 'rounded',

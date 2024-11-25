@@ -8,7 +8,7 @@ import {
     CardActions,
     CardContent,
     CardHeader, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-    IconButton, ListItemButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip,
+    IconButton, ListItem, ListItemButton, ListItemIcon, Menu, MenuItem, Select, Stack, Tooltip, Typography,
 } from "@mui/material";
 import {GraphManager} from "@/hooks/useGraphDataManager";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
@@ -44,8 +44,9 @@ import {sortAscend, sortDescend} from "@/utils/array";
 import {CytoscapeManager} from "@/hooks/useCytoscapeManager";
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-
+import RouteIcon from '@mui/icons-material/Route';
 import {AttachMoney, CallSplit} from "@mui/icons-material";
+import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
 
 type Props = {
     selectedDataManager: SelectedDataManager
@@ -58,6 +59,9 @@ export function DetailTab(props: Props) {
 
     const [openDeleteGraphPopup, setOpenDeleteGraphPopup] = useState(false);
     const [openNoDataPopup, setOpenNoDataPopup] = useState(false);
+    const [openShowDataPopup, setOpenShowDataPopup] = useState(false);
+    const [openLoadPathPopup, setOpenLoadPathPopup] = useState(false);
+    const [numberNodesInPath, setNumberNodesInPath] = useState(4);
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
     const selectedElements = props.selectedDataManager.selectedElements;
     const setSelectedElements = props.selectedDataManager.setSelectedElements;
@@ -76,12 +80,18 @@ export function DetailTab(props: Props) {
                     <AllOutIcon/>
                 </IconButton>
             </Tooltip>
+            <Tooltip title="Load path between two nodes from database">
+                <IconButton disabled={!(data.length == 2 && data[0].elementType == ElementType.node)} onClick={() => {
+                    setOpenLoadPathPopup(true)
+                }}>
+                    <RouteIcon/>
+                </IconButton>
+            </Tooltip>
             <Divider/>
             <Tooltip title="Show data">
                 <IconButton
-                    // disabled={data.length != 1}
-                    disabled
-                    onClick={() => {}}
+                    disabled={data.length != 1}
+                    onClick={() => {setOpenShowDataPopup(true)}}
                 >
                     <ZoomInIcon/>
                 </IconButton>
@@ -101,7 +111,7 @@ export function DetailTab(props: Props) {
                 </IconButton>
             </Tooltip>
             <Divider/>
-            <Tooltip title="Select neighbors">
+            <Tooltip title="Select neighbor elements">
                 <IconButton  disabled={data.length == 0} onClick={() => {
                     if (data[0].elementType == ElementType.node) {
                         const nodeIds = data.map(e => e.id)
@@ -220,6 +230,30 @@ export function DetailTab(props: Props) {
                 </DialogActions>
             </Dialog>
             <Dialog
+                open={openShowDataPopup}
+                onClose={() => setOpenShowDataPopup(false)}
+            >
+                <DialogTitle>
+                    Element details
+                </DialogTitle>
+                <DialogContent className={styles.showDataPopup}>
+                    {data.length == 1 &&
+                        <List dense={false}>
+                            {
+                                TABLE_COLUMNS[data[0].type].map(info =>
+                                    <ListItem key={info.id}><ListItemText secondary={info.header} primary={(data[0] as Record<string, any>)[(info.accessorKey == 'timestamp' ? 'timestampRepresentation' : info.accessorKey)]}></ListItemText></ListItem>
+                                )
+                            }
+                        </List>
+                    }
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenShowDataPopup(false)} autoFocus>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
                 open={openNoDataPopup}
                 onClose={() => setOpenNoDataPopup(false)}
             >
@@ -228,6 +262,40 @@ export function DetailTab(props: Props) {
                 </DialogTitle>
                 <DialogActions>
                     <Button onClick={() => setOpenNoDataPopup(false)} autoFocus>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={openLoadPathPopup}
+                onClose={() => setOpenLoadPathPopup(false)}
+            >
+                <DialogTitle>
+                    Path length
+                </DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2}>
+                    <Typography>Select the maximum length of the paths to load from the database</Typography>
+                      <Select
+                          size={'small'}
+                          value={numberNodesInPath}
+                          onChange={(event) => {setNumberNodesInPath(event.target.value as number)}}
+                      >
+                          <MenuItem value={1}>One node</MenuItem>
+                          <MenuItem value={2}>Two nodes</MenuItem>
+                          <MenuItem value={3}>Three nodes</MenuItem>
+                          <MenuItem value={4}>Four nodes</MenuItem>
+                      </Select>
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => {
+                        props.graphManager.loadPathData(data[0].id, data[1].id, numberNodesInPath)
+                        setOpenLoadPathPopup(false)
+                    }}>
+                        Confirm
+                    </Button>
+                    <Button onClick={() => setOpenLoadPathPopup(false)}>
                         Close
                     </Button>
                 </DialogActions>

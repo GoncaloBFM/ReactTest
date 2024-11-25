@@ -63,7 +63,14 @@ export const CYTOSCAPE_STYLESHEET = [
             'background-color': '#EDAE49',
             label: 'data(id)',
         }
-    }, {
+    } , {
+        selector: 'node[type="company"]',
+        style: {
+            'background-image': '/company.svg',
+            'background-color': '#a6d720',
+            label: 'data(name)',
+        }
+    },{
         selector: 'edge[type="transaction"]',
         style: {
             label: 'data(label)',
@@ -77,7 +84,42 @@ export const CYTOSCAPE_STYLESHEET = [
         selector: 'edge[type="connection"]',
         style: {
             'line-color': '#000',
-            'line-style': 'dashed'
+            'line-style': 'dashed',
+            'target-arrow-shape': 'triangle',
+            'target-arrow-color': '#000',
+            'source-arrow-color': '#000',
+            'arrow-scale': 0.3,
+        }
+    }, {
+        selector: 'edge[type="connection"]',
+        style: {
+            'line-color': '#000',
+            'line-style': 'dashed',
+            'target-arrow-shape': 'triangle',
+            label: 'data(name)'
+        }
+    }, {
+        selector: '.manualEdgeSelect',
+        css: {
+            'line-color': SELECTED_COLOR,
+            'width': 1,
+            'arrow-scale': 0.4,
+            'color': SELECTED_COLOR,
+            'target-arrow-color': SELECTED_COLOR,
+            'source-arrow-color': SELECTED_COLOR
+        }
+    }, {
+        selector: 'node[faded="true"]',
+        style: {
+            'text-opacity': 0.2,
+            'background-opacity': 0.2,
+            'border-opacity': 0.2,
+            'background-image-opacity': 0.2
+        }
+    }, {
+        selector: 'edge[faded="true"]',
+        style: {
+            label: 'data(name)'
         }
     }, {
         selector: '.manualEdgeSelect',

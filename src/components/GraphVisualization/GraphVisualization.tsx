@@ -22,6 +22,7 @@ import {PersonNode} from "@/types/PersonNode";
 // @ts-ignore
 import compoundDragAndDrop from 'cytoscape-compound-drag-and-drop';
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
+import {CompanyNode} from "@/types/CompanyNode";
 
 cytoscape.use(compoundDragAndDrop);
 cytoscape.use(COSEBilkent);
@@ -121,6 +122,7 @@ export function GraphVisualization(props: Props) {
                         id: `${edge.source}${EDGE_ID_SEPARATOR}${edge.target}`,
                         source: edge.source,
                         target: edge.target,
+                        name: edge.name,
                         type: EdgeType.connection,
                         faded: subSelectedIds.size == 0 || subSelectedIds.has(edge.id) ? 'false' : 'true',
                         elementType: ElementType.edge,
@@ -149,19 +151,27 @@ export function GraphVisualization(props: Props) {
     const generateCytoscapeNodes = useCallback((nodes: Array<GraphNode>, subSelectedIds: Set<string>) => {
         return nodes.map(node => {
             const faded = subSelectedIds.size == 0 || subSelectedIds.has(node.id) ? 'false' : 'true'
+            const baseData = {
+                id: node.id,
+                graphIds: [node.id],
+                type: node.type,
+                elementType: ElementType.node,
+                expanded: node.expanded ? 'true' : 'false',
+                faded: faded
+            }
+
+            console.log(node.type)
             if (node.type == NodeType.person)
                 return {
-                    data: { //TODO: refactor this, its duplicated code from return below
-                        id: node.id,
-                        graphIds: [node.id],
-                        type: node.type,
-                        elementType: ElementType.node,
-                        expanded: node.expanded ? 'true' : 'false',
-                        faded: faded,
-                        name: (node as PersonNode).name
-                    }
+                    data: Object.assign(baseData, {name: (node as PersonNode).name})
                 }
-            return {data: {id: node.id, graphIds: [node.id], expanded: node.expanded ? 'true' : 'false', faded: faded, type: node.type, elementType: ElementType.node}}
+            else  if (node.type == NodeType.account)
+                return {data: baseData}
+            else if (node.type == NodeType.company) {
+                return {data: Object.assign(baseData, {name: (node as CompanyNode).name})}
+            }
+            else
+                throw new Error(`Unknown node type ${node.type}`)
         })
     }, [])
 
@@ -181,11 +191,9 @@ export function GraphVisualization(props: Props) {
             className={styles.GraphVisualization}
             cy={(cy) => {
                 props.cytoscapeManager.setCy(cy)
-                cy.autounselectify(true);
-                cy.minZoom(1.5)
-                cy.maxZoom(14)
             }}
-            zoom={2}
+            maxZoom={5}
+            minZoom={1}
             stylesheet={CYTOSCAPE_STYLESHEET as any}
         />
     </>;
