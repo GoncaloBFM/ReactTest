@@ -63,7 +63,7 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
             return new AccountNode(
                 rawNode['id'],
                 rawNode['iban'],
-                rawNode['country'],
+                rawNode['nationality'],
                 {})
 
         if (rawNode['type'] == NodeType.company)

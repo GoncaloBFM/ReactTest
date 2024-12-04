@@ -39,12 +39,19 @@ export const CYTOSCAPE_STYLESHEET = [
             'text-background-shape': 'round-rectangle'
         }
     }, {
+        selector: 'node[type="compound"]',
+        style: {
+            'background-color': '#f3f3f3',
+            label: 'data(id)',
+            'border-color': '#777777',
+            'text-background-opacity': 0,
+        }
+    },  {
         selector: 'node[type="person"]',
         style: {
             'background-color': '#0096c7',
             label: 'data(name)',
             'background-image': '/person.svg',
-
         }
     }, {
         selector: 'node[expanded="false"]',

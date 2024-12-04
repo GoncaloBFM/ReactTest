@@ -6,10 +6,13 @@
     width: 30px;
     height: 30px;
   }
-  .summaryBody &:last-child {
+  .summaryBody {
     width: 100%;
     height: calc(100% - 62px);
     box-sizing: border-box;
+  }
+
+  .summaryBody &:last-child {
     .summaryGrid {
       overflow-y: scroll;
       .summaryEntry {
@@ -17,5 +20,9 @@
       }
     }
   }
-
+  .error{
+    height: calc(100% - 62px);
+    width: 100%;
+    box-sizing: border-box;
+  }
 }

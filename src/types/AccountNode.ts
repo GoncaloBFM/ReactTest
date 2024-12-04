@@ -10,14 +10,14 @@ export class AccountNode implements GraphNode {
     expanded:boolean;
     hidden:false;
     iban: string
-    country:string
+    nationality:string
 
-    constructor(id: string, iban: string, country:string, data: {[key:string]: string}) {
+    constructor(id: string, iban: string, nationality:string, data: {[key:string]: string}) {
         this.id = id
         this.type = NodeType.account
         this.elementType = ElementType.node
         this.iban = iban
-        this.country = country
+        this.nationality = nationality
         this.data = data
         this.expanded = false;
         this.hidden = false

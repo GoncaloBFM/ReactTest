@@ -7,6 +7,8 @@ import COSEBilkent from 'cytoscape-cose-bilkent';
 // @ts-ignore
 import cola from 'cytoscape-cola';
 // @ts-ignore
+import fcose from 'cytoscape-fcose';
+// @ts-ignore
 import {CYTOSCAPE_STYLESHEET} from './CytoscapeStylesheet';
 import {CytoscapeManager} from '@/hooks/useCytoscapeManager';
 import {GraphData} from "@/types/GraphData";
@@ -24,8 +26,8 @@ import compoundDragAndDrop from 'cytoscape-compound-drag-and-drop';
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 import {CompanyNode} from "@/types/CompanyNode";
 
-cytoscape.use(compoundDragAndDrop);
-cytoscape.use(COSEBilkent);
+//cytoscape.use(COSEBilkent);
+cytoscape.use( fcose );
 
 type Props = {
     graphData: GraphData,
@@ -58,7 +60,7 @@ export function GraphVisualization(props: Props) {
             const cytoscapeData = cytoscapeElement.data()
             const type = cytoscapeElement.isNode() ? ElementType.node : ElementType.edge
             const elements = type == ElementType.node ? props.graphData.nodesMap : props.graphData.edgesMap
-            const toSelectIds = cytoscapeData['graphIds'] as string[]
+            const toSelectIds = ((cytoscapeData.type == 'compound') ? cytoscapeElement.children().map((e: any) => e.id()) : cytoscapeData['graphIds']) as string []
             const toSelect = toSelectIds.map(elementId => elements.get(elementId))
 
             cytoscapeElement.data().manualSelect = true
@@ -149,7 +151,7 @@ export function GraphVisualization(props: Props) {
     }, [cy, selectedElements]) //TODO: move selected to GraphElement class, update / clear it on setSelected
 
     const generateCytoscapeNodes = useCallback((nodes: Array<GraphNode>, subSelectedIds: Set<string>) => {
-        return nodes.map(node => {
+        const cytoscapeNodes = nodes.map(node => {
             const faded = subSelectedIds.size == 0 || subSelectedIds.has(node.id) ? 'false' : 'true'
             const baseData = {
                 id: node.id,
@@ -157,14 +159,12 @@ export function GraphVisualization(props: Props) {
                 type: node.type,
                 elementType: ElementType.node,
                 expanded: node.expanded ? 'true' : 'false',
-                faded: faded
+                faded: faded,
+                parent: props.cytoscapeManager.groupByCountry ? (node as any).nationality : undefined
             }
 
-            console.log(node.type)
             if (node.type == NodeType.person)
-                return {
-                    data: Object.assign(baseData, {name: (node as PersonNode).name})
-                }
+                return {data: Object.assign(baseData, {name: (node as PersonNode).name})}
             else  if (node.type == NodeType.account)
                 return {data: baseData}
             else if (node.type == NodeType.company) {
@@ -173,7 +173,16 @@ export function GraphVisualization(props: Props) {
             else
                 throw new Error(`Unknown node type ${node.type}`)
         })
-    }, [])
+
+        if (props.cytoscapeManager.groupByCountry) {
+            new Set(nodes.map((n: any)=> n.nationality)).forEach(e => {
+                if (e != undefined) {
+                    cytoscapeNodes.push({data: {id: e, type: 'compound'}} as any)
+                }
+            })
+        }
+        return cytoscapeNodes
+    }, [props.cytoscapeManager.groupByCountry])
 
     const cytoscapeGraph = useMemo(() => {
         const subSelectedIds = new Set(subSelectedElements.map(e => e.id))

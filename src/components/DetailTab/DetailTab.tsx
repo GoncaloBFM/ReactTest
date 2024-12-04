@@ -53,6 +53,10 @@ type Props = {
     cytoscapeManager: CytoscapeManager
     graphManager: GraphManager
     graphData: GraphData
+    showBasicAnalysis: boolean
+    setShowBasicAnalysis: Dispatch<SetStateAction<boolean>>
+    showFlowAnalysis: boolean
+    setShowFlowAnalysis: Dispatch<SetStateAction<boolean>>
 };
 
 export function DetailTab(props: Props) {
@@ -98,15 +102,23 @@ export function DetailTab(props: Props) {
             </Tooltip>
             <Tooltip title="Show statistics">
                 <IconButton
-                    // disabled={props.graphData.edgesList.length == 0 || (data.length == 1 && data[0].elementType == ElementType.edge)}
-                    disabled
-                    onClick={() => {}}
+                    color={props.showBasicAnalysis ? 'primary' : 'default'}
+                    disabled={data.length == 0}
+                    onClick={() => {
+                        props.setShowFlowAnalysis(false)
+                        props.setShowBasicAnalysis(!props.showBasicAnalysis);
+                    }}
                 >
                     <BarChartIcon/>
                 </IconButton>
             </Tooltip>
             <Tooltip title="Flow analysis">
-                <IconButton disabled onClick={() => {}}>
+                <IconButton disabled={data.length < 2 || data[0].elementType == ElementType.node}
+                            onClick={() => {
+                                props.setShowBasicAnalysis(false)
+                                props.setShowFlowAnalysis(!props.showFlowAnalysis)
+                            }
+                }>
                     <CallSplit/>
                 </IconButton>
             </Tooltip>

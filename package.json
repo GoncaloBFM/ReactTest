@@ -25,6 +25,7 @@
     "cytoscape-compound-drag-and-drop": "^1.1.0",
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-cxtmenu": "^3.5.0",
+    "cytoscape-fcose": "^2.2.0",
     "dayjs": "^1.11.12",
     "material-react-table": "^3.0.1",
     "next": "14.2.5",

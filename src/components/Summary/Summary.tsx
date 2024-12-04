@@ -5,10 +5,11 @@ import {ElementType} from "@/types/ElementType";
 import {EdgeType} from "@/types/EdgeType";
 import {TransactionEdge} from "@/types/TransactionEdge";
 import {mean, std, sum} from "@/utils/math";
-import {Card, CardContent, CardHeader} from "@mui/material";
+import {Card, CardContent, CardHeader, Stack, Typography} from "@mui/material";
 import styles from './Summary.module.scss'
 import Image from "next/image";
-import statsIcon from "../../../public/stats.svg";
+import statsIcon from "../../../public/graph.svg";
+import summaryIcon from "../../../public/summary.svg";
 import React, {useMemo} from "react";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 import {GraphData} from "@/types/GraphData";
@@ -22,6 +23,8 @@ type Props = {
     selectedDataManager: SelectedDataManager
 };
 
+const NOTHING_TO_SHOW = <Stack direction={'row'} alignItems={'center'} justifyContent={'center'} className={styles.error}><Typography variant={'subtitle1'} align={'center'}>No transactions to summarize</Typography></Stack>
+
 export function Summary(props: Props) {
     const selectedElements = props.selectedDataManager.selectedElements
     const subSelectedElements = props.selectedDataManager.subSelectedElements
@@ -32,11 +35,11 @@ export function Summary(props: Props) {
             ? graphData.edgesList
             : subSelectedElements.length == 0 ? selectedElements : subSelectedElements
         if (data.length == 0)
-            return <></>
+            return NOTHING_TO_SHOW
         if (data[0].elementType == ElementType.edge) {
             const transactions = data.filter(edge => edge.type == EdgeType.transaction) as TransactionEdge[]
             if (transactions.length <= 1)
-                return <></>
+                return NOTHING_TO_SHOW
             const transactionAmounts = transactions.map(edge => edge.amountPaid)
             const transactionsMils = sortDescend(transactions.map(edge => edge.timestamp.getTime()))
             const totalTimeElapsed = millisecondsToDHM(transactionsMils[0] - transactionsMils[transactionsMils.length - 1])
@@ -87,7 +90,7 @@ export function Summary(props: Props) {
             )
 
             if ((inTransactions.length <= 1) && (outTransactions.length <= 1))
-                return <></>
+                return NOTHING_TO_SHOW
 
             const inTransactionsAmounts = inTransactions.map(e => e.amountPaid)
             const outTransactionsAmounts = outTransactions.map(e => e.amountPaid)
@@ -107,10 +110,10 @@ export function Summary(props: Props) {
                 <Grid size={1}>
                     <ListItemText className={styles.summaryEntry} primary={'Net amount'} secondary={(totalInTransactionsAmounts - totalOutTransactionsAmounts).toFixed(2) + ' USD'}/>
                 </Grid>
-                {inTransactions.length > 1 && <Grid size={1}>
+                {<Grid size={1}>
                     <ListItemText className={styles.summaryEntry} primary={'Total inbound amount'} secondary={totalInTransactionsAmounts.toFixed(2) + ' USD'}/>
                 </Grid>}
-                {outTransactions.length > 1 && <Grid size={1}>
+                {<Grid size={1}>
                     <ListItemText className={styles.summaryEntry} primary={'Total outbound amount'} secondary={totalOutTransactionsAmounts.toFixed(2) + ' USD'}/>
                 </Grid >}
                 {inTransactions.length > 1 && <Grid size={1}>
@@ -124,7 +127,7 @@ export function Summary(props: Props) {
     }, [graphData, selectedElements, subSelectedElements])
 
     return <Card className = {styles.Summary} elevation={0}>
-        <CardHeader avatar = {<Image src = {statsIcon} alt = '' className = {styles.summaryImage} />}
+        <CardHeader avatar = {<Image src = {summaryIcon} alt = '' className = {styles.summaryImage} />}
                     title = 'Transactions summary'
         />
         <CardContent sx={{'&:last-child': { paddingBottom: 0 }}} className={styles.summaryBody}>

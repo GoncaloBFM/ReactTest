@@ -108,9 +108,9 @@ const NODE_ACCOUNT_COLUMNS = NODE_COLUMNS.concat([{
     filterVariant: 'text',
     size: 200,
 }, {
-    id: 'country',
-    accessorKey: 'country',
-    header: 'Country',
+    id: 'nationality',
+    accessorKey: 'nationality',
+    header: 'Nationality',
     filterVariant: 'text',
     size: 200,
 }])

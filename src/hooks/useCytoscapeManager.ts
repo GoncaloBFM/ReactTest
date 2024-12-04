@@ -4,7 +4,7 @@ import cytoscape from "cytoscape";
 export type CytoscapeManager = ReturnType<typeof useCytoscapeManager>;
 
 export const CyLayouts = {
-    COSE_LAYOUT: {name: 'cose-bilkent'},
+    COSE_LAYOUT: {name: 'fcose'},
 } as const;
 
 type CyLayoutValue = (typeof CyLayouts)[keyof typeof CyLayouts];
@@ -13,6 +13,7 @@ export function useCytoscapeManager() {
     const [layout, setLayout] = useState<CyLayoutValue>(CyLayouts.COSE_LAYOUT);
     const [layoutStateCounter, setLayoutStateCounter] = useState(0)
     const [cy, setCy] = useState<cytoscape.Core | null>(null);
+    const [groupByCountry, setGroupByCountry] = useState(false)
 
     const runLayout = useCallback((layout: CyLayoutValue) => {
         cy?.layout(layout).run();
@@ -42,5 +43,7 @@ export function useCytoscapeManager() {
         rerunLayout: rerunLayout,
         rerunLayoutAfterRender: rerunLayoutAfterRender,
         layout: layout,
+        setGroupByCountry,
+        groupByCountry
     } as const;
 }
