@@ -16,13 +16,16 @@ import {useState} from "react";
 import {FlowAnalysis} from "@/components/FlowAnalysis/FlowAnalysis";
 
 
-
 export default function DashboardLayout() {
     const [showBasicAnalysis, setShowBasicAnalysis] = useState(false)
     const [showFlowAnalysis, setShowFlowAnalysis] = useState(false)
+    const [hideLabels, setHideLabels] = useState(false)
 
     const {graphData, graphManager, isLoading} = useGraphDataManager(
-        () => {cytoscapeManager.rerunLayoutAfterRender()},
+        () => {
+            cytoscapeManager.rerunLayoutAfterRender()
+            setHideLabels(false)
+        },
         ()=> {selectedDataManager.setSelectedElements([])}
     )
     const selectedDataManager = useSelectedDataManager(
@@ -38,12 +41,16 @@ export default function DashboardLayout() {
             {isLoading && <LoadingSpinner/>}
             <div className={styles.header}>
                 <DashboardHeader onSubmitLoadDataPopup={graphManager.loadGraphData}
+                                 hideLabels={hideLabels}
+                                 setHideLabels={setHideLabels}
                                  cytoscapeManager={cytoscapeManager}></DashboardHeader></div>
             <div className={styles.visualizations}>
                 <div className={styles.top}>
                     <div className={styles.graph}>
                         <GraphVisualization
                             cytoscapeManager={cytoscapeManager}
+                            hideLabels={hideLabels}
+                            setHideLabels={setHideLabels}
                             selectedDataManager={selectedDataManager}
                             graphData={graphData}/>
                         <div className={styles.detailTab}>

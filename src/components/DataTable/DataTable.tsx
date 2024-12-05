@@ -33,7 +33,6 @@ type Props = {
 };
 
 const ALL_TYPE_TABLE_FILTER = 'all'
-//TODO: change time picker to match header
 export function DataTable(props: Props) {
     const [elementTypeTableFilter, setElementTypeTableFilter] = useState<string>(ElementType.edge)
     const [typeTableFilter, setTypeTableFilter] = useState<string>(ALL_TYPE_TABLE_FILTER)
@@ -90,6 +89,7 @@ export function DataTable(props: Props) {
         columnFilterDisplayMode: 'popover',
         enableBottomToolbar: false,
         enableRowVirtualization: true,
+        //enableColumnVirtualization: true,
         muiTableContainerProps: {
             sx: {
                 maxHeight: 'calc(100% - 56px)',
@@ -121,12 +121,7 @@ export function DataTable(props: Props) {
             variant: 'outlined',
         },
 
-        manualPagination: true,
-        muiPaginationProps: {
-            color: 'secondary',
-            shape: 'rounded',
-            variant: 'outlined',
-        },
+        enablePagination:false,
         renderTopToolbarCustomActions: ({ table }) => (
             <Box sx={{ display: 'flex'}}>
                 <Stack direction="row" spacing={1}>
@@ -198,24 +193,6 @@ export function DataTable(props: Props) {
 
             return newIdsList
         },
-        // enableRowActions: true,
-        // renderRowActions: ({ row }) => (
-        //     <Box>
-        //         <IconButton onClick={() => console.info('Edit')}>
-        //             <ZoomInIcon/>
-        //         </IconButton>
-        //         <IconButton onClick={() => {
-        //             if (subSelectedElements[0].elementType == ElementType.node) {
-        //                 props.graphManager.removeNodeData(subSelectedElements.map(e => e.id))
-        //             } else {
-        //                 props.graphManager.removeEdgeData(subSelectedElements.map(e => e.id))
-        //             }
-        //         }}>
-        //             <DeleteOutlineIcon/>
-        //         </IconButton>
-        //     </Box>
-        // ),
-
         getRowId: (e) => e.id,
         state: {
             rowSelection: getTableSelectedElementsRecord

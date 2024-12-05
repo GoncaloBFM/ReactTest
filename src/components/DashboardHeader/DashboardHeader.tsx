@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {Dispatch, SetStateAction, useMemo, useState} from 'react';
 import {
     AppBar,
     Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle,
@@ -34,6 +34,8 @@ import cytoscape from "cytoscape";
 type Props = {
     onSubmitLoadDataPopup: (nodeIds: Array<string>) => Promise<void>
     cytoscapeManager: CytoscapeManager,
+    hideLabels: boolean
+    setHideLabels: Dispatch<SetStateAction<boolean>>
 };
 
 export function DashboardHeader(props: Props) {
@@ -84,11 +86,11 @@ export function DashboardHeader(props: Props) {
                             Currency: <Select size="small"
                                               disabled={true}
                                               onChange={()=>{}}
-                                              value={'EUR'}
+                                              value={'USD'}
                                               inputProps={{ size:'small' }}
                         >
-                            <MenuItem value={'EUR'}>EUR</MenuItem>
                             <MenuItem value={'USD'}>USD</MenuItem>
+                            <MenuItem value={'EUR'}>EUR</MenuItem>
                         </Select>
                         </Stack>
                         <Stack>
@@ -97,6 +99,16 @@ export function DashboardHeader(props: Props) {
                                                                    onChange={()=>{}}
                                                                    value={'No'}
                                                                    inputProps={{ size:'small' }}
+                        >
+                            <MenuItem value={'Yes'}>Yes</MenuItem>
+                            <MenuItem value={'No'}>No</MenuItem>
+                        </Select>
+                        </Stack>
+                        <Stack>
+                            Hide graph labels <Select size="small"
+                                              onChange={e => props.setHideLabels(e.target.value == 'Yes')}
+                                              value={props.hideLabels ? 'Yes' : 'No'}
+                                              inputProps={{ size:'small' }}
                         >
                             <MenuItem value={'Yes'}>Yes</MenuItem>
                             <MenuItem value={'No'}>No</MenuItem>

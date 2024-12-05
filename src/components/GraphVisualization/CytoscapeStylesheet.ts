@@ -5,7 +5,7 @@ export const CYTOSCAPE_STYLESHEET = [
     {
         selector: 'core',
         style: {
-            'selection-box-opacity': 0,
+            'selection-box-opacity': 0.0,
             'active-bg-opacity': 0,
         }
     }, {
@@ -67,7 +67,6 @@ export const CYTOSCAPE_STYLESHEET = [
         selector: 'node[type="account"]',
         style: {
             'background-image': '/account.svg',
-
             'background-color': '#EDAE49',
             label: 'data(id)',
         }
@@ -168,6 +167,11 @@ export const CYTOSCAPE_STYLESHEET = [
         css: {
             'background-color': SELECTED_COLOR,
             'color': SELECTED_COLOR,
+        }
+    }, {
+        selector: '.hideLabels',//TODO: Add setting for hiding labels
+        css: {
+            'label':''
         }
     }
 ]

@@ -47,6 +47,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import RouteIcon from '@mui/icons-material/Route';
 import {AttachMoney, CallSplit} from "@mui/icons-material";
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
+import {Span} from "next/dist/server/lib/trace/tracer";
 
 type Props = {
     selectedDataManager: SelectedDataManager
@@ -77,30 +78,39 @@ export function DetailTab(props: Props) {
 
     return (
         <Stack className={styles.DetailTab} direction="column">
-            <Tooltip title="Load neighbors from database">
-                <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
-                    props.graphManager.expandNodeData(data.map(e => e.id))
-                }}>
-                    <AllOutIcon/>
-                </IconButton>
+            <Tooltip title="Load neighbors from database" placement="right">
+                <span>
+                    <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
+                        props.graphManager.expandNodeData(data.map(e => e.id))
+                    }}>
+                        <AllOutIcon/>
+                    </IconButton>
+                </span>
             </Tooltip>
-            <Tooltip title="Patern analysis">
+            <Tooltip title="Patern analysis" placement="right">
+                <span>
                 <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
                     setOpenPatternAnalysisPopup(true)
                 }}>
                     <RouteIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
             <Divider/>
-            <Tooltip title="Show data">
+            <Tooltip title="Show data" placement="right">
+                <span>
                 <IconButton
                     disabled={data.length != 1}
-                    onClick={() => {setOpenShowDataPopup(true)}}
+                    onClick={() => {
+                        setOpenShowDataPopup(true)
+                    }}
                 >
                     <ZoomInIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
-            <Tooltip title="Show statistics">
+            <Tooltip title="Show statistics" placement="right">
+                <span>
                 <IconButton
                     color={props.showBasicAnalysis ? 'primary' : 'default'}
                     disabled={data.length == 0}
@@ -111,8 +121,10 @@ export function DetailTab(props: Props) {
                 >
                     <BarChartIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
-            <Tooltip title="Flow analysis">
+            <Tooltip title="Flow analysis" placement="right">
+                <span>
                 <IconButton disabled={data.length < 2 || data[0].elementType == ElementType.node}
                             onClick={() => {
                                 props.setShowBasicAnalysis(false)
@@ -121,9 +133,11 @@ export function DetailTab(props: Props) {
                 }>
                     <CallSplit/>
                 </IconButton>
+                </span>
             </Tooltip>
             <Divider/>
-            <Tooltip title="Select neighbor elements">
+            <Tooltip title="Select neighbor elements" placement="right">
+                <span>
                 <IconButton  disabled={data.length == 0} onClick={() => {
                     if (data[0].elementType == ElementType.node) {
                         const nodeIds = data.map(e => e.id)
@@ -148,8 +162,10 @@ export function DetailTab(props: Props) {
                 }}>
                     <TrackChangesIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
-            <Tooltip title="Select all transactions">
+            <Tooltip title="Select all transactions" placement="right">
+                <span>
                 <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
                     const nodeIds = data.map(e => e.id)
                     const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && (nodeIds.includes(e.source) || nodeIds.includes(e.target)))
@@ -162,8 +178,10 @@ export function DetailTab(props: Props) {
                 }}>
                     <AttachMoney/>
                 </IconButton>
+                </span>
             </Tooltip>
-            <Tooltip title="Select outbound transactions">
+            <Tooltip title="Select outbound transactions" placement="right">
+                <span>
                 <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
                     const nodeIds = data.map(e => e.id)
                     const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.source))
@@ -176,8 +194,10 @@ export function DetailTab(props: Props) {
                 }}>
                     <CallMadeIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
-            <Tooltip title="Select inbound transactions">
+            <Tooltip title="Select inbound transactions" placement="right">
+                <span>
                 <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
                     const nodeIds = data.map(e => e.id)
                     const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.target))
@@ -190,20 +210,28 @@ export function DetailTab(props: Props) {
                 }}>
                     <CallReceivedIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
             <Divider/>
-            <Tooltip title="Rerun graph layout">
+            <Tooltip title="Rerun graph layout" placement="right">
+                <span>
                 <IconButton onClick={() => {props.cytoscapeManager.rerunLayout()}}>
                     <RestartAltIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
-            <Tooltip title="Center on graph">
-                <IconButton onClick={() => {props.cytoscapeManager.cy?.fit()}}>
+            <Tooltip title="Center on graph" placement="right">
+                <span>
+                <IconButton onClick={() => {
+                    props.cytoscapeManager.cy?.fit()
+                }}>
                     <CenterFocusStrongIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
             <Divider/>
-            <Tooltip title='Delete element'>
+            <Tooltip title='Delete element' placement="right">
+                <span>
                 <IconButton onClick={() => {
                     if (data.length == 0) {
                         setOpenDeleteGraphPopup(true)
@@ -215,6 +243,7 @@ export function DetailTab(props: Props) {
                 }}>
                     <DeleteOutlineIcon/>
                 </IconButton>
+                </span>
             </Tooltip>
             <Dialog
                 open={openDeleteGraphPopup}

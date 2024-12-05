@@ -33,6 +33,8 @@ type Props = {
     graphData: GraphData,
     selectedDataManager: SelectedDataManager,
     cytoscapeManager: CytoscapeManager
+    hideLabels: boolean
+    setHideLabels: Dispatch<SetStateAction<boolean>>
 };
 
 const EDGE_ID_SEPARATOR= '_'
@@ -43,7 +45,10 @@ export function GraphVisualization(props: Props) {
     const setSelectedElements = props.selectedDataManager.setSelectedElements;
     const selectedElements = props.selectedDataManager.selectedElements;
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
+    const hideLabels = props.hideLabels
+    const setHideLabels = props.setHideLabels
 
+    //TODO: Add feature for box selection and multiple node dragging
     useEffect(() => {
         const stale = cy;
         if (stale == null)
@@ -51,7 +56,8 @@ export function GraphVisualization(props: Props) {
 
         const tapHandler = (e: any) => {
             if (e.target === stale) {
-                setSelectedElements([]);
+                if (selectedElements.length > 0)
+                    setSelectedElements([]);
             }
         };
 
@@ -63,9 +69,8 @@ export function GraphVisualization(props: Props) {
             const toSelectIds = ((cytoscapeData.type == 'compound') ? cytoscapeElement.children().map((e: any) => e.id()) : cytoscapeData['graphIds']) as string []
             const toSelect = toSelectIds.map(elementId => elements.get(elementId))
 
-            cytoscapeElement.data().manualSelect = true
             if (e.originalEvent.shiftKey && selectedElements.length > 0 && selectedElements[0].elementType == type) {
-                if (cytoscapeElement.classes().length > 0) {
+                if (cytoscapeElement.hasClass('manualNodeSelect') || cytoscapeElement.hasClass('manualEdgeSelect')) {
                     setSelectedElements(selectedElements.filter(e => !toSelect.some(otherE => otherE.id == e.id)))
                 } else {
                     setSelectedElements((oldSelectedElements) => (toSelect as GraphElement[]).concat(oldSelectedElements))
@@ -85,7 +90,7 @@ export function GraphVisualization(props: Props) {
         }
     }, [cy, setSelectedElements, selectedElements, props.graphData])
 
-    const aggregateTransactionEdge = (edgesGroup: Array<TransactionEdge>, subSelectedIds: Set<string>) => {
+    const aggregateTransactionEdge = useCallback((edgesGroup: Array<TransactionEdge>, subSelectedIds: Set<string>) => {
         const amount = edgesGroup.reduce((amount, edge) => amount = amount + edge.amountPaid, 0)
         const label = `( ${amount.toFixed(2)} USD | ${edgesGroup.length} )`
         const ids = edgesGroup.map(edge => edge.id)
@@ -102,7 +107,31 @@ export function GraphVisualization(props: Props) {
                 graphIds: ids
             }
         }
-    }
+    }, [])
+
+    useEffect(() => {
+        if (hideLabels) {
+            cy?.elements().addClass('hideLabels')
+        } else {
+            cy?.elements().removeClass('hideLabels')
+        }
+    }, [cy, hideLabels]);
+
+    useEffect(() => {
+        const handleKeyDown = (e:any) => {
+            if (e.repeat) return; // Do nothing
+            if (e.key == 'l') {
+                setHideLabels(!hideLabels)
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+
+    }, [cy, setHideLabels, hideLabels]);
+
+
 
     const generateCytoscapeEdges = useCallback((edges: Array<GraphEdge>, subSelectedIds: Set<string>) => {
         let cytoscapeTransactionEdges = new Array<any>
@@ -136,9 +165,10 @@ export function GraphVisualization(props: Props) {
 
         return [...cytoscapeTransactionEdges, ...cytoscapeConnectionEdges]
 
-    }, [])
+    }, [aggregateTransactionEdge])
 
     useEffect(() => {
+        cy?.startBatch()
         cy?.elements('node').removeClass('manualNodeSelect')
         cy?.elements('edge').removeClass('manualEdgeSelect')
         if (selectedElements.length > 0) {
@@ -148,6 +178,7 @@ export function GraphVisualization(props: Props) {
                 (selectedElements as GraphEdge[]).map(e => cy?.$(`#${e.source}${EDGE_ID_SEPARATOR}${e.target}`).addClass('manualEdgeSelect'))
             }
         }
+        cy?.endBatch()
     }, [cy, selectedElements]) //TODO: move selected to GraphElement class, update / clear it on setSelected
 
     const generateCytoscapeNodes = useCallback((nodes: Array<GraphNode>, subSelectedIds: Set<string>) => {
@@ -186,7 +217,7 @@ export function GraphVisualization(props: Props) {
 
     const cytoscapeGraph = useMemo(() => {
         const subSelectedIds = new Set(subSelectedElements.map(e => e.id))
-
+        console.log(generateCytoscapeNodes(props.graphData.nodesList, subSelectedIds))
         return [
             ...generateCytoscapeNodes(props.graphData.nodesList, subSelectedIds),
             ...generateCytoscapeEdges(props.graphData.edgesList, subSelectedIds)
@@ -204,6 +235,7 @@ export function GraphVisualization(props: Props) {
             maxZoom={5}
             minZoom={1}
             stylesheet={CYTOSCAPE_STYLESHEET as any}
+            boxSelectionEnabled={true}
         />
     </>;
 
