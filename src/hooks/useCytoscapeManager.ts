@@ -19,6 +19,14 @@ export function useCytoscapeManager() {
         cy?.layout(layout).run();
     }, [cy])
 
+    const addElementHighlight = useCallback((elementId: string) => {
+        cy?.getElementById(elementId).addClass('manualEdgeHighlight')
+    }, [cy])
+
+    const removeElementHighlight = useCallback((elementId: string) => {
+        cy?.getElementById(elementId).removeClass('manualEdgeHighlight')
+    }, [cy])
+
     const rerunLayout = useCallback(() => {
         runLayout(layout)
     }, [runLayout, layout])
@@ -44,6 +52,8 @@ export function useCytoscapeManager() {
         rerunLayoutAfterRender: rerunLayoutAfterRender,
         layout: layout,
         setGroupByCountry,
-        groupByCountry
+        groupByCountry,
+        addElementHighlight,
+        removeElementHighlight
     } as const;
 }

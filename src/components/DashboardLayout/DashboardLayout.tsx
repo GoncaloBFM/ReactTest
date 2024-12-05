@@ -26,7 +26,10 @@ export default function DashboardLayout() {
         ()=> {selectedDataManager.setSelectedElements([])}
     )
     const selectedDataManager = useSelectedDataManager(
-        () => {setShowBasicAnalysis(false), setShowFlowAnalysis(false)}
+        () => {
+            setShowBasicAnalysis(false)
+            setShowFlowAnalysis(false)
+        }
     )
     const cytoscapeManager = useCytoscapeManager()
 
@@ -63,7 +66,11 @@ export default function DashboardLayout() {
                     }
                     {showFlowAnalysis &&
                         <div className={styles.basicAnalysis}>
-                            <FlowAnalysis selectedDataManager={selectedDataManager} graphData={graphData}></FlowAnalysis>
+                            <FlowAnalysis
+                                cytoscapeManager={cytoscapeManager}
+                                selectedDataManager={selectedDataManager}
+                                graphData={graphData}>
+                            </FlowAnalysis>
                         </div>
                     }
                 </div>

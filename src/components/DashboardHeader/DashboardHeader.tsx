@@ -49,7 +49,7 @@ export function DashboardHeader(props: Props) {
                     <Button size='small' disableElevation className={styles.headerButton} startIcon={<SettingsIcon/>} onClick={()=>{setOpenSettingsPopup(true)}}>
                         Settings
                     </Button>
-                    <Button size={'small'} className={styles.headerButton} onClick={() => {}}>
+                    <Button size={'small'} disabled={true} className={styles.headerButton} onClick={() => {}}>
                         <AddIcon/> Add data
                     </Button>
                     <Button  size={'small'} className={styles.headerButton} onClick={() => setLoadDataPopupOpen(true)}>
@@ -70,41 +70,44 @@ export function DashboardHeader(props: Props) {
                 </DialogTitle>
                 <DialogContent>
                     <Stack gap={3}>
-                    <Stack>
-                        Timezone: <Select size="small"
-                                          onChange={()=>{}}
-                                          value={0}
-                                          inputProps={{ size:'small' }}
-                    >
-                        {...timeZoneMenuItems}
-                    </Select>
-                    </Stack>
                         <Stack>
-                        Currency: <Select size="small"
-                                          onChange={()=>{}}
-                                          value={'EUR'}
-                                          inputProps={{ size:'small' }}
-                    >
-                        <MenuItem value={'EUR'}>EUR</MenuItem>
-                        <MenuItem value={'USD'}>USD</MenuItem>
-                    </Select>
-                    </Stack>
+                            Timezone: <Select size="small"
+                                              onChange={()=>{}}
+                                              disabled={true}
+                                              value={0}
+                                              inputProps={{ size:'small' }}
+                        >
+                            {...timeZoneMenuItems}
+                        </Select>
+                        </Stack>
                         <Stack>
-                        Adjust currency for inflation: <Select size="small"
-                                          onChange={()=>{}}
-                                          value={'No'}
-                                          inputProps={{ size:'small' }}
-                    >
-                        <MenuItem value={'Yes'}>Yes</MenuItem>
-                        <MenuItem value={'No'}>No</MenuItem>
-                    </Select>
-                    </Stack>
+                            Currency: <Select size="small"
+                                              disabled={true}
+                                              onChange={()=>{}}
+                                              value={'EUR'}
+                                              inputProps={{ size:'small' }}
+                        >
+                            <MenuItem value={'EUR'}>EUR</MenuItem>
+                            <MenuItem value={'USD'}>USD</MenuItem>
+                        </Select>
+                        </Stack>
+                        <Stack>
+                            Adjust currency for inflation: <Select size="small"
+                                                                   disabled={true}
+                                                                   onChange={()=>{}}
+                                                                   value={'No'}
+                                                                   inputProps={{ size:'small' }}
+                        >
+                            <MenuItem value={'Yes'}>Yes</MenuItem>
+                            <MenuItem value={'No'}>No</MenuItem>
+                        </Select>
+                        </Stack>
                         <Stack>
                             {/*TODO: turning feature off and on breaks graphs*/}
                             Group by country: <Select size="small"
-                                                                   onChange={(e)=>{props.cytoscapeManager.setGroupByCountry(e.target.value == 'Yes')}}
-                                                                   value={props.cytoscapeManager.groupByCountry ? 'Yes' : 'No'}
-                                                                   inputProps={{ size:'small' }}
+                                                      onChange={(e)=>{props.cytoscapeManager.setGroupByCountry(e.target.value == 'Yes')}}
+                                                      value={props.cytoscapeManager.groupByCountry ? 'Yes' : 'No'}
+                                                      inputProps={{ size:'small' }}
                         >
                             <MenuItem value={'Yes'}>Yes</MenuItem>
                             <MenuItem value={'No'}>No</MenuItem>
@@ -113,6 +116,9 @@ export function DashboardHeader(props: Props) {
                     </Stack>
                 </DialogContent>
                 <DialogActions>
+                    <Button onClick={() => setOpenSettingsPopup(false)}>
+                        Save
+                    </Button>
                     <Button onClick={() => setOpenSettingsPopup(false)} autoFocus>
                         Close
                     </Button>

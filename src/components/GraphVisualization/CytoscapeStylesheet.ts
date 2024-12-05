@@ -1,4 +1,5 @@
 const SELECTED_COLOR = '#D1495B'
+const HIGHLIGHTED_COLOR = '#D1495B'
 
 export const CYTOSCAPE_STYLESHEET = [
     {
@@ -138,7 +139,16 @@ export const CYTOSCAPE_STYLESHEET = [
             'target-arrow-color': SELECTED_COLOR,
             'source-arrow-color': SELECTED_COLOR
         }
+
     }, {
+        selector: '.manualEdgeHighlight',
+        css: {
+            'underlay-shape': 'round-rectangle',
+            'underlay-opacity': .2,
+            'underlay-color': HIGHLIGHTED_COLOR
+        }
+
+    },{
         selector: 'node[faded="true"]',
         style: {
             'text-opacity': 0.2,

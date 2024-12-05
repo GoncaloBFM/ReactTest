@@ -27,14 +27,17 @@ export function Histogram(props:Props) {
     const selectedElements = props.selectedDataManager.selectedElements
     const setSelectedElements = props.selectedDataManager.setSelectedElements
     const subSelectedElements = props.selectedDataManager.subSelectedElements
+    const setSubSelectedElements = props.selectedDataManager.setSubSelectedElements
     const graphData = props.graphData
     const [histogramToggle, setHistogramToggle] = useState(false)
 
 
     const onPlotClick = useCallback((e: any) => {
-                setSelectedElements((e.points[0].customdata as unknown as string[]).map((edgeId: string) => graphData.edgesMap.get(edgeId)))
+                const selected = (e.points[0].customdata as unknown as string[]).map((edgeId: string) => graphData.edgesMap.get(edgeId))
+                setSelectedElements(selected)
+                setSubSelectedElements(selected)
             }
-    , [graphData, setSelectedElements])
+    , [graphData, setSelectedElements, setSubSelectedElements])
 
     const generatePlotLayout = useCallback((minXAxis: Date, maxXAxis: Date, minYAxis: number, maxYAxis:number, logYAxis: boolean) => {
         return {

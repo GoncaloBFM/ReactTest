@@ -12,9 +12,13 @@ import ListItemText from "@mui/material/ListItemText";
 import {ExpandLess, ExpandMore} from "@mui/icons-material";
 import {datetimeToString} from "@/utils/time";
 import {bifurcateBy} from "@/utils/array";
+import {CytoscapeManager} from "@/hooks/useCytoscapeManager";
+import {GraphData} from "@/types/GraphData";
 
 type Props = {
     selectedDataManager: SelectedDataManager
+    cytoscapeManager: CytoscapeManager
+    graphData: GraphData
 }
 
 type BankEntry = {nodeId: string, out:number, in:number, available: number, firstDate: number}
@@ -26,9 +30,44 @@ export function FlowAnalysis(props: Props) {
     const [sinksOpen, setSinksOpen] = React.useState(true);
     const [middleOpen, setMiddleOpen] = React.useState(true);
 
-    const formatWellEntry = (e: BankEntry) => <ListItemText key={e.nodeId} className={styles.entry} secondary={`Out: ${e.out.toFixed(2)}`} primary={`${e.nodeId} (first active: ${datetimeToString(new Date(e.firstDate))})`}></ListItemText>
-    const formatMiddleEntry = (e: BankEntry) => <ListItemText onMouseEnter={()=> {}} onMouseLeave={() => {}} onClick={()=>{}} key={e.nodeId} className={styles.entry} secondary={`In ${e.in.toFixed(2)} Out: ${e.out.toFixed(2)} Net: ${e.available.toFixed(2)}`} primary={`${e.nodeId} (first active: ${datetimeToString(new Date(e.firstDate))})`}></ListItemText>
-    const formatSinkEntry = (e: BankEntry) => <ListItemText key={e.nodeId} className={styles.entry} secondary={`In ${e.in.toFixed(2)}`} primary={`${e.nodeId} (first active: ${datetimeToString(new Date(e.firstDate))})`}></ListItemText>
+    //TODO: refactor and remove duplicated code on events
+    const formatWellEntry = (e: BankEntry) => <ListItemText
+        onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
+        onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
+        onClick={()=>{
+            props.cytoscapeManager.removeElementHighlight(e.nodeId)
+            props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+        }}
+        key={e.nodeId}
+        className={styles.entry}
+        secondary={`Out: ${e.out.toFixed(2)}`}
+        primary={`${e.nodeId} (first active: ${datetimeToString(new Date(e.firstDate))})`}>
+
+    </ListItemText>
+    const formatMiddleEntry = (e: BankEntry) => <ListItemText
+        onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
+        onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
+        onClick={()=>{
+            props.cytoscapeManager.removeElementHighlight(e.nodeId)
+            props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+        }}
+        key={e.nodeId}
+        className={styles.entry}
+        secondary={`In ${e.in.toFixed(2)} Out: ${e.out.toFixed(2)} Net: ${e.available.toFixed(2)}`}
+        primary={`${e.nodeId} (first active: ${datetimeToString(new Date(e.firstDate))})`}>
+    </ListItemText>
+    const formatSinkEntry = (e: BankEntry) => <ListItemText
+        onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
+        onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
+        onClick={()=>{
+            props.cytoscapeManager.removeElementHighlight(e.nodeId)
+            props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+        }}
+        key={e.nodeId}
+        className={styles.entry}
+        secondary={`In ${e.in.toFixed(2)}`}
+        primary={`${e.nodeId} (first active: ${datetimeToString(new Date(e.firstDate))})`}>
+    </ListItemText>
 
     const [wellsList, middlesList, sinksList] = useMemo(() => {
         const data = props.selectedDataManager.subSelectedElements.length == 0 ? props.selectedDataManager.selectedElements : props.selectedDataManager.subSelectedElements

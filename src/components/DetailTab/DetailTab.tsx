@@ -64,7 +64,7 @@ export function DetailTab(props: Props) {
     const [openDeleteGraphPopup, setOpenDeleteGraphPopup] = useState(false);
     const [openNoDataPopup, setOpenNoDataPopup] = useState(false);
     const [openShowDataPopup, setOpenShowDataPopup] = useState(false);
-    const [openLoadPathPopup, setOpenLoadPathPopup] = useState(false);
+    const [openPatternAnalysisPopup, setOpenPatternAnalysisPopup] = useState(false);
     const [numberNodesInPath, setNumberNodesInPath] = useState(4);
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
     const selectedElements = props.selectedDataManager.selectedElements;
@@ -84,9 +84,9 @@ export function DetailTab(props: Props) {
                     <AllOutIcon/>
                 </IconButton>
             </Tooltip>
-            <Tooltip title="Load path between two nodes from database">
-                <IconButton disabled={!(data.length == 2 && data[0].elementType == ElementType.node)} onClick={() => {
-                    setOpenLoadPathPopup(true)
+            <Tooltip title="Patern analysis">
+                <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
+                    setOpenPatternAnalysisPopup(true)
                 }}>
                     <RouteIcon/>
                 </IconButton>
@@ -279,8 +279,8 @@ export function DetailTab(props: Props) {
                 </DialogActions>
             </Dialog>
             <Dialog
-                open={openLoadPathPopup}
-                onClose={() => setOpenLoadPathPopup(false)}
+                open={openPatternAnalysisPopup}
+                onClose={() => setOpenPatternAnalysisPopup(false)}
             >
                 <DialogTitle>
                     Path length
@@ -303,11 +303,11 @@ export function DetailTab(props: Props) {
                 <DialogActions>
                     <Button onClick={() => {
                         props.graphManager.loadPathData(data[0].id, data[1].id, numberNodesInPath)
-                        setOpenLoadPathPopup(false)
+                        setOpenPatternAnalysisPopup(false)
                     }}>
                         Confirm
                     </Button>
-                    <Button onClick={() => setOpenLoadPathPopup(false)}>
+                    <Button onClick={() => setOpenPatternAnalysisPopup(false)}>
                         Close
                     </Button>
                 </DialogActions>
