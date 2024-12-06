@@ -1,34 +1,94 @@
-import React from "react";
 import styles from './DashboardLayout.module.scss'
-import { Grid } from "@mui/material";
-import { TabbedVisualization } from "../TabbedVisualization/TabbedVisualization";
-import { Plot } from "../Plot/Plot";
-import { PlotTable } from "../PlotTable/PlotTable";
-import { usePlottingData } from "@/hooks/usePlottingData";
-import { LoadingSpinner } from "../LoadingSpinner";
+import {Stack} from "@mui/material";
+import {DashboardHeader} from "../DashboardHeader/DashboardHeader";
+import {GraphVisualization} from "@/components/GraphVisualization/GraphVisualization";
+import {LoadingSpinner} from "../LoadingSpinner/LoadingSpinner";
+import {useGraphDataManager} from "@/hooks/useGraphDataManager";
+import {useCytoscapeManager} from "@/hooks/useCytoscapeManager";
+import {DataTable} from "@/components/DataTable/DataTable";
+import {useSelectedDataManager} from "@/hooks/useSelectedDataManager";
+import {DetailTab} from "@/components/DetailTab/DetailTab";
+import Divider from "@mui/material/Divider";
+import {Summary} from "@/components/Summary/Summary";
+import {Histogram} from "@/components/Histogram/Histogram";
+import {BasicAnalysis} from "@/components/BasicAnalysis/BasicAnalysis";
+import {useState} from "react";
+import {FlowAnalysis} from "@/components/FlowAnalysis/FlowAnalysis";
+
 
 export default function DashboardLayout() {
-    const {
-        isLoading,
-        data,
-        filterData
-    } = usePlottingData();
+    const [showBasicAnalysis, setShowBasicAnalysis] = useState(false)
+    const [showFlowAnalysis, setShowFlowAnalysis] = useState(false)
+    const [hideLabels, setHideLabels] = useState(false)
+
+    const {graphData, graphManager, isLoading} = useGraphDataManager(
+        () => {
+            cytoscapeManager.rerunLayoutAfterRender()
+            setHideLabels(false)
+        },
+        ()=> {selectedDataManager.setSelectedElements([])}
+    )
+    const selectedDataManager = useSelectedDataManager(
+        () => {
+            setShowBasicAnalysis(false)
+            setShowFlowAnalysis(false)
+        }
+    )
+    const cytoscapeManager = useCytoscapeManager()
 
     return (
         <div className={styles.DashboardLayout}>
-            {isLoading && <LoadingSpinner />}
-
-            <Grid container>
-                <Grid item xs={6} className={styles.plot}>
-                    <Plot data={data} filterData={() => filterData({ list: ["1"] })} />
-                </Grid>
-                <Grid item xs={6} className={styles.tabbedVisualization}>
-                    <TabbedVisualization data={data} />
-                </Grid>
-                <Grid item xs={12} className={styles.plotTable}>
-                    <PlotTable data={data} />
-                </Grid>
-            </Grid>
+            {isLoading && <LoadingSpinner/>}
+            <div className={styles.header}>
+                <DashboardHeader onSubmitLoadDataPopup={graphManager.loadGraphData}
+                                 hideLabels={hideLabels}
+                                 setHideLabels={setHideLabels}
+                                 cytoscapeManager={cytoscapeManager}></DashboardHeader></div>
+            <div className={styles.visualizations}>
+                <div className={styles.top}>
+                    <div className={styles.graph}>
+                        <GraphVisualization
+                            cytoscapeManager={cytoscapeManager}
+                            hideLabels={hideLabels}
+                            setHideLabels={setHideLabels}
+                            selectedDataManager={selectedDataManager}
+                            graphData={graphData}/>
+                        <div className={styles.detailTab}>
+                            <DetailTab
+                                graphData={graphData}
+                                selectedDataManager={selectedDataManager}
+                                graphManager={graphManager}
+                                cytoscapeManager={cytoscapeManager}
+                                showBasicAnalysis={showBasicAnalysis}
+                                setShowBasicAnalysis={setShowBasicAnalysis}
+                                showFlowAnalysis={showFlowAnalysis}
+                                setShowFlowAnalysis={setShowFlowAnalysis}
+                            />
+                        </div>
+                    </div>
+                    {showBasicAnalysis &&
+                        <div className={styles.basicAnalysis}>
+                            <BasicAnalysis selectedDataManager={selectedDataManager} graphData={graphData}></BasicAnalysis>
+                        </div>
+                    }
+                    {showFlowAnalysis &&
+                        <div className={styles.basicAnalysis}>
+                            <FlowAnalysis
+                                cytoscapeManager={cytoscapeManager}
+                                selectedDataManager={selectedDataManager}
+                                graphData={graphData}>
+                            </FlowAnalysis>
+                        </div>
+                    }
+                </div>
+                <Divider/>
+                <div className={styles.bottom}>
+                    <DataTable
+                        graphData={graphData}
+                        selectedDataManager={selectedDataManager}
+                        graphManager={graphManager}/>
+                </div>
+            </div>
         </div>
     );
 }
