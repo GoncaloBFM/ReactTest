@@ -74,7 +74,7 @@ export function DataTable(props: Props) {
         return [data, columns]
     }, [selectedElements, props.graphData, typeTableFilter, elementTypeTableFilter])
 
-    const getTableSelectedElementsRecord = useMemo(() => Object.fromEntries(subSelectedElements.map(e => [e.id, true])), [subSelectedElements])
+    const selectedTableElementsRecord = useMemo(() => Object.fromEntries(subSelectedElements.map(e => [e.id, true])), [subSelectedElements])
 
     const table = useMaterialReactTable({
         columns: columns as any,
@@ -89,7 +89,6 @@ export function DataTable(props: Props) {
         columnFilterDisplayMode: 'popover',
         enableBottomToolbar: false,
         enableRowVirtualization: true,
-        //enableColumnVirtualization: true,
         muiTableContainerProps: {
             sx: {
                 maxHeight: 'calc(100% - 56px)',
@@ -110,8 +109,7 @@ export function DataTable(props: Props) {
             showColumnFilters: true,
             showGlobalFilter: true,
             columnPinning: {
-                left: ['mrt-row-expand', 'mrt-row-select', 'id'],
-                right: ['mrt-row-actions'],
+                left: ['mrt-row-select', 'id'],
             },
             density: 'compact',
         },
@@ -130,13 +128,6 @@ export function DataTable(props: Props) {
                             <Typography key={'1'} variant='subtitle1' className={styles.rowCounter}>
                                 {subSelectedElements.length} row{subSelectedElements.length > 1 ? 's' : ''} selected
                             </Typography>,
-
-                            <Button key={'2'} size='small' onClick={() => {
-                                setSubSelectedElements(oldTableSelection => {
-                                    const oldRowIdsSelected = new Set(oldTableSelection.map(e => e.id))
-                                    return data.filter(e => !oldRowIdsSelected.has(e.id))
-                                })
-                            }}> Invert selection </Button>
                         ]
                     }
                     {(subSelectedElements.length == 0 && selectedElements.length == 0) &&
@@ -151,8 +142,8 @@ export function DataTable(props: Props) {
                                     setSelectedElements([])
                                 }}
                             >
-                                <MenuItem value={ElementType.node}>Nodes</MenuItem>
-                                <MenuItem value={ElementType.edge}>Edges</MenuItem>
+                                <MenuItem value={ElementType.node}>Entities</MenuItem>
+                                <MenuItem value={ElementType.edge}>Relations</MenuItem>
                             </Select>,
                             <Select
                                 key={'2'}
@@ -164,7 +155,7 @@ export function DataTable(props: Props) {
                                 }}
                             ><MenuItem value={ALL_TYPE_TABLE_FILTER}>All</MenuItem>
                                 {elementTypeTableFilter == ElementType.node
-                                    ? [<MenuItem key={1} value={NodeType.person}>Persons</MenuItem>, <MenuItem key={2} value={NodeType.account}>Accounts</MenuItem>]
+                                    ? [<MenuItem key={1} value={NodeType.person}>Persons</MenuItem>, <MenuItem key={2} value={NodeType.account}>Accounts</MenuItem>, <MenuItem key={3} value={NodeType.company}>Companies</MenuItem>]
                                     : [<MenuItem key={3} value={EdgeType.transaction}>Transactions</MenuItem>, <MenuItem key={4} value={EdgeType.connection}>Connections</MenuItem>]
                                 }
                             </Select>]
@@ -183,7 +174,7 @@ export function DataTable(props: Props) {
                  return
             }
 
-            const newIdsList = Object.keys(updater(getTableSelectedElementsRecord))
+            const newIdsList = Object.keys(updater(selectedTableElementsRecord))
 
             const newTableSelectedElements = (data[0].elementType == ElementType.node)
              ? newIdsList.map((id:string) => props.graphData.nodesMap.get(id))
@@ -195,11 +186,9 @@ export function DataTable(props: Props) {
         },
         getRowId: (e) => e.id,
         state: {
-            rowSelection: getTableSelectedElementsRecord
+            rowSelection: selectedTableElementsRecord
         },
     });
 
-    return <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en">
-        <div className={styles.DataTable}><MaterialReactTable table={table}/></div>
-    </LocalizationProvider>
+    return <div className={styles.DataTable}><MaterialReactTable table={table}/></div>
 }

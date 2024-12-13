@@ -169,10 +169,6 @@ export function Histogram(props:Props) {
         return {xAxis, yCount, yTotal, minXAxis, maxXAxis, minYCountAxis, maxYCountAxis, minYTotalAxis, maxYTotalAxis, ids}
     }, [])
 
-    const data = selectedElements.length == 0 && subSelectedElements.length == 0
-        ? graphData.edgesList
-        : subSelectedElements.length == 0 ? selectedElements : subSelectedElements
-
     const generateTransactionPlots = useCallback((transactions: TransactionEdge[]) => {
             const plotData = calculatePlotData(transactions)
             return [
@@ -214,6 +210,10 @@ export function Histogram(props:Props) {
     }, [calculatePlotData, generateDoublePlot])
 
     const generatePlot = useMemo(() => {
+        const data = selectedElements.length == 0 && subSelectedElements.length == 0
+            ? []
+            : subSelectedElements.length == 0 ? selectedElements : subSelectedElements
+
         if (data.length > 0) {
            if (data[0].elementType == ElementType.edge) {
                const transactions = data.filter(edge => edge.type == EdgeType.transaction) as TransactionEdge[]
@@ -243,7 +243,7 @@ export function Histogram(props:Props) {
            }
         }
         return NOTHING_TO_SHOW
-    }, [data, graphData, generateTransactionPlots, generateNodePlots, histogramToggle])
+    }, [graphData, generateTransactionPlots, generateNodePlots, histogramToggle, selectedElements, subSelectedElements])
 
     return  <Card className = {styles.Histogram} elevation={0}>
     <CardHeader avatar = {<Image src = {graphIcon} alt = '' className = {styles.titleImage} />}

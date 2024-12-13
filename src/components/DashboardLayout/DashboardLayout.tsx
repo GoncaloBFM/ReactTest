@@ -12,7 +12,7 @@ import Divider from "@mui/material/Divider";
 import {Summary} from "@/components/Summary/Summary";
 import {Histogram} from "@/components/Histogram/Histogram";
 import {BasicAnalysis} from "@/components/BasicAnalysis/BasicAnalysis";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {FlowAnalysis} from "@/components/FlowAnalysis/FlowAnalysis";
 
 
@@ -29,19 +29,33 @@ export default function DashboardLayout() {
         ()=> {selectedDataManager.setSelectedElements([])}
     )
     const selectedDataManager = useSelectedDataManager(
-        () => {
-            setShowBasicAnalysis(false)
-            setShowFlowAnalysis(false)
-        }
+        () => {}
     )
     const cytoscapeManager = useCytoscapeManager()
+
+
+    useEffect(() => {
+        const handleKeyDown = (e:any) => {
+            if (e.repeat) return; // Do nothing
+            if (e.key == 'Escape') {
+                setShowBasicAnalysis(false)
+                setShowFlowAnalysis(false)
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+
+    }, []);
+
 
     return (
         <div className={styles.DashboardLayout}>
             {isLoading && <LoadingSpinner/>}
             <div className={styles.header}>
-                <DashboardHeader onSubmitLoadDataPopup={graphManager.loadGraphData}
-                                 hideLabels={hideLabels}
+                <DashboardHeader hideLabels={hideLabels}
+                                 graphManager={graphManager}
                                  setHideLabels={setHideLabels}
                                  cytoscapeManager={cytoscapeManager}></DashboardHeader></div>
             <div className={styles.visualizations}>

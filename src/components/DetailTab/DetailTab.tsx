@@ -15,6 +15,7 @@ import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 import Image from 'next/image'
 import styles from './DetailTab.module.scss'
 import personIcon from '../../../public/person.svg'
+import CachedIcon from '@mui/icons-material/Cached';
 import accountIcon from '../../../public/account.svg'
 import networkIcon from '../../../public/network.svg'
 import {GraphElement} from "@/types/GraphElement";
@@ -113,7 +114,6 @@ export function DetailTab(props: Props) {
                 <span>
                 <IconButton
                     color={props.showBasicAnalysis ? 'primary' : 'default'}
-                    disabled={data.length == 0}
                     onClick={() => {
                         props.setShowFlowAnalysis(false)
                         props.setShowBasicAnalysis(!props.showBasicAnalysis);
@@ -125,7 +125,8 @@ export function DetailTab(props: Props) {
             </Tooltip>
             <Tooltip title="Flow analysis" placement="right">
                 <span>
-                <IconButton disabled={data.length < 2 || data[0].elementType == ElementType.node}
+                <IconButton
+                            color={props.showFlowAnalysis ? 'primary' : 'default'}
                             onClick={() => {
                                 props.setShowBasicAnalysis(false)
                                 props.setShowFlowAnalysis(!props.showFlowAnalysis)
@@ -216,7 +217,7 @@ export function DetailTab(props: Props) {
             <Tooltip title="Rerun graph layout" placement="right">
                 <span>
                 <IconButton onClick={() => {props.cytoscapeManager.rerunLayout()}}>
-                    <RestartAltIcon/>
+                    <CachedIcon/>
                 </IconButton>
                 </span>
             </Tooltip>

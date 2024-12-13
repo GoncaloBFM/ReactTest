@@ -56,6 +56,9 @@ export function GraphVisualization(props: Props) {
 
         const tapHandler = (e: any) => {
             if (e.target === stale) {
+                if (e.originalEvent.shiftKey) {
+                    return
+                }
                 if (selectedElements.length > 0)
                     setSelectedElements([]);
             }
@@ -217,7 +220,6 @@ export function GraphVisualization(props: Props) {
 
     const cytoscapeGraph = useMemo(() => {
         const subSelectedIds = new Set(subSelectedElements.map(e => e.id))
-        console.log(generateCytoscapeNodes(props.graphData.nodesList, subSelectedIds))
         return [
             ...generateCytoscapeNodes(props.graphData.nodesList, subSelectedIds),
             ...generateCytoscapeEdges(props.graphData.edgesList, subSelectedIds)

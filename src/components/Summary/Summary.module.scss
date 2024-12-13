@@ -10,6 +10,7 @@
     width: 100%;
     height: calc(100% - 62px);
     box-sizing: border-box;
+    overflow: auto;
   }
 
   .summaryBody &:last-child {

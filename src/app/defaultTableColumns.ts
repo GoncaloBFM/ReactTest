@@ -17,7 +17,7 @@ const NODE_TYPE_COLUMN =
         header: 'Type',
         filterVariant: 'multi-select',
         size: 200,
-        filterSelectOptions: [NodeType.account, NodeType.person]
+        filterSelectOptions: [NodeType.account, NodeType.person, NodeType.company]
     }
 
 const EDGE_TYPE_COLUMN =

@@ -12,6 +12,7 @@ export const CYTOSCAPE_STYLESHEET = [
         selector: 'node',
         classes: [],
         style: {
+            'outline-opacity': 1,
             'overlay-opacity': 0,
             'font-size': 5,
             shape: 'ellipse',

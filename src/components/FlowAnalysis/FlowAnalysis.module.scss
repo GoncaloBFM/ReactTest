@@ -8,4 +8,15 @@
   .listHeader {
     padding-left: 0;
   }
+  .analysisBody {
+    overflow: auto;
+    width: 100%;
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+  }
+  .error{
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+    width: 100%;
+  }
 }

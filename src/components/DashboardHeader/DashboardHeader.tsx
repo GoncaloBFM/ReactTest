@@ -29,10 +29,11 @@ import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
 import List from "@mui/material/List";
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
 import cytoscape from "cytoscape";
+import {GraphManager} from "@/hooks/useGraphDataManager";
 
 
 type Props = {
-    onSubmitLoadDataPopup: (nodeIds: Array<string>) => Promise<void>
+    graphManager: GraphManager,
     cytoscapeManager: CytoscapeManager,
     hideLabels: boolean
     setHideLabels: Dispatch<SetStateAction<boolean>>
@@ -58,7 +59,7 @@ export function DashboardHeader(props: Props) {
                         <DownloadIcon/> Load data
                     </Button>
                     <LoadDataPopup
-                        onSubmit={props.onSubmitLoadDataPopup}
+                        graphManager={props.graphManager}
                         isOpen={isLoadDataPopupOpen}
                         setOpen={setLoadDataPopupOpen}></LoadDataPopup>
                 </Stack>

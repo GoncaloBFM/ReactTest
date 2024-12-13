@@ -8,7 +8,6 @@ import {mean, std, sum} from "@/utils/math";
 import {Card, CardContent, CardHeader, Stack, Typography} from "@mui/material";
 import styles from './Summary.module.scss'
 import Image from "next/image";
-import statsIcon from "../../../public/graph.svg";
 import summaryIcon from "../../../public/summary.svg";
 import React, {useMemo} from "react";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
@@ -32,7 +31,7 @@ export function Summary(props: Props) {
 
     const summary = useMemo(() => {
         const data = selectedElements.length == 0 && subSelectedElements.length == 0
-            ? graphData.edgesList
+            ? []
             : subSelectedElements.length == 0 ? selectedElements : subSelectedElements
         if (data.length == 0)
             return NOTHING_TO_SHOW
