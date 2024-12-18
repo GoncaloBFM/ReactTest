@@ -1,6 +1,6 @@
 'use client';
-import { Roboto } from 'next/font/google';
-import { createTheme } from '@mui/material/styles';
+import {Roboto} from 'next/font/google';
+import {createTheme} from '@mui/material/styles';
 
 const roboto = Roboto({
     weight: ['300', '400', '500', '700'],
@@ -18,7 +18,7 @@ const theme = createTheme({
     components: {
         MuiAlert: {
             styleOverrides: {
-                root: ({ ownerState }) => ({
+                root: ({ownerState}) => ({
                     ...(ownerState.severity === 'info' && {
                         backgroundColor: '#60a5fa',
                     }),
