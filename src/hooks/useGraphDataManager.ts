@@ -11,7 +11,7 @@ import {AccountNode} from "@/types/AccountNode";
 import {GraphData} from "@/types/GraphData";
 import {bifurcateBy} from "@/utils/array";
 import {CompanyNode} from "@/types/CompanyNode";
-import {parseRawEdge, parseRawNode} from "@/utils/apiResponseParser";
+import {parseRawEdge, parseRawNode} from "@/utils/responseParser";
 
 export type GraphManager = {
     expandNodeData: (nodeIds: Array<string>, callback?: (wasRemoved: boolean) => void) => void,
@@ -97,7 +97,6 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
         setGraphData(new GraphData(newNodes, newEdges))
         afterGraphDataAdded()
     }, [graphData, afterGraphDataAdded])
-
 
     const loadGraphData = useMemo(() => {
         return async (nodeIds: string[]) => {

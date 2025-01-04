@@ -57,6 +57,7 @@ export default function DashboardLayout() {
                 <DashboardHeader hideLabels={hideLabels}
                                  graphManager={graphManager}
                                  setHideLabels={setHideLabels}
+                                 selectedDataManager={selectedDataManager}
                                  cytoscapeManager={cytoscapeManager}></DashboardHeader></div>
             <div className={styles.visualizations}>
                 <div className={styles.top}>

@@ -12,7 +12,7 @@ export class TransactionEdge implements GraphEdge {
     id: string
     type: (typeof EdgeType)[keyof typeof EdgeType];
     amountPaid: number
-    currencyPaid: string
+    currency: string
     elementType: (typeof ElementType)[keyof typeof ElementType]
     timestamp: Date
     timestampRepresentation: string
@@ -20,13 +20,13 @@ export class TransactionEdge implements GraphEdge {
     data: {[key:string]: string}
     hidden:false;
 
-    constructor(source: string, target: string, id: string, amountPaid: number, currencyPaid: string, transactionType: string, timestamp: Date, data: {[key:string]: string}) {
+    constructor(source: string, target: string, id: string, amountPaid: number, currency: string, transactionType: string, timestamp: Date, data: {[key:string]: string}) {
         this.source = source
         this.target = target
         this.id = id
         this.type = EdgeType.transaction
         this.amountPaid = amountPaid
-        this.currencyPaid = currencyPaid
+        this.currency = currency
         this.data = data
         this.transactionType = transactionType
         this.elementType = ElementType.edge

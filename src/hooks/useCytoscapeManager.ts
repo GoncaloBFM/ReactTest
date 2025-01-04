@@ -15,6 +15,8 @@ export function useCytoscapeManager() {
     const [cy, setCy] = useState<cytoscape.Core | null>(null);
     const [groupByCountry, setGroupByCountry] = useState(false)
 
+
+
     const runLayout = useCallback((layout: CyLayoutValue) => {
         cy?.layout(layout).run();
     }, [cy])
@@ -46,12 +48,23 @@ export function useCytoscapeManager() {
                 setCy(next);
             }
         }, [cy]),
-
+        setGroupByCountry: useCallback((set: boolean) => {
+            cy?.startBatch()
+            if (!set) {
+                cy?.nodes().forEach((n: any) => {
+                    if (n.parent) {
+                        n.move({parent: null})
+                    }
+                })
+                cy?.elements('node[type="compound"]').remove()
+            }
+            cy?.endBatch()
+            setGroupByCountry(set)
+        }, [cy]),
         setLayout: setLayout,
         rerunLayout: rerunLayout,
         rerunLayoutAfterRender: rerunLayoutAfterRender,
         layout: layout,
-        setGroupByCountry,
         groupByCountry,
         addElementHighlight,
         removeElementHighlight

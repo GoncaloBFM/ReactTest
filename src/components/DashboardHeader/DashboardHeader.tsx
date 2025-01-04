@@ -30,6 +30,7 @@ import List from "@mui/material/List";
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
 import cytoscape from "cytoscape";
 import {GraphManager} from "@/hooks/useGraphDataManager";
+import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 
 
 type Props = {
@@ -37,6 +38,7 @@ type Props = {
     cytoscapeManager: CytoscapeManager,
     hideLabels: boolean
     setHideLabels: Dispatch<SetStateAction<boolean>>
+    selectedDataManager: SelectedDataManager
 };
 
 export function DashboardHeader(props: Props) {
@@ -58,10 +60,15 @@ export function DashboardHeader(props: Props) {
                     <Button  size={'small'} className={styles.headerButton} onClick={() => setLoadDataPopupOpen(true)}>
                         <DownloadIcon/> Load data
                     </Button>
-                    <LoadDataPopup
-                        graphManager={props.graphManager}
-                        isOpen={isLoadDataPopupOpen}
-                        setOpen={setLoadDataPopupOpen}></LoadDataPopup>
+                    {isLoadDataPopupOpen &&
+                        <LoadDataPopup
+                            loadEdges={false}
+                            graphManager={props.graphManager}
+                            selectedDataManager={props.selectedDataManager}
+                            isOpen={isLoadDataPopupOpen}
+                            setOpen={setLoadDataPopupOpen}>
+                        </LoadDataPopup>
+                    }
                 </Stack>
             </Stack>
             <Dialog
@@ -118,7 +125,10 @@ export function DashboardHeader(props: Props) {
                         <Stack>
                             {/*TODO: turning feature off and on breaks graphs*/}
                             Group by country: <Select size="small"
-                                                      onChange={(e)=>{props.cytoscapeManager.setGroupByCountry(e.target.value == 'Yes')}}
+                                                      onChange={(e)=>{
+                                                          props.cytoscapeManager.setGroupByCountry(e.target.value == 'Yes')
+                                                          props.cytoscapeManager.rerunLayoutAfterRender()
+                                                      }}
                                                       value={props.cytoscapeManager.groupByCountry ? 'Yes' : 'No'}
                                                       inputProps={{ size:'small' }}
                         >

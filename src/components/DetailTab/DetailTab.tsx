@@ -49,6 +49,7 @@ import RouteIcon from '@mui/icons-material/Route';
 import {AttachMoney, CallSplit} from "@mui/icons-material";
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
 import {Span} from "next/dist/server/lib/trace/tracer";
+import {LoadDataPopup} from "@/components/LoadDataPopup/LoadDataPopup";
 
 type Props = {
     selectedDataManager: SelectedDataManager
@@ -62,7 +63,7 @@ type Props = {
 };
 
 export function DetailTab(props: Props) {
-
+    const [isLoadDataPopupOpen, setLoadDataPopupOpen] = useState(false);
     const [openDeleteGraphPopup, setOpenDeleteGraphPopup] = useState(false);
     const [openNoDataPopup, setOpenNoDataPopup] = useState(false);
     const [openShowDataPopup, setOpenShowDataPopup] = useState(false);
@@ -82,21 +83,21 @@ export function DetailTab(props: Props) {
             <Tooltip title="Load neighbors from database" placement="right">
                 <span>
                     <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
-                        props.graphManager.expandNodeData(data.map(e => e.id))
+                        setLoadDataPopupOpen(true)
                     }}>
                         <AllOutIcon/>
                     </IconButton>
                 </span>
             </Tooltip>
-            <Tooltip title="Patern analysis" placement="right">
-                <span>
-                <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
-                    setOpenPatternAnalysisPopup(true)
-                }}>
-                    <RouteIcon/>
-                </IconButton>
-                </span>
-            </Tooltip>
+            {/*<Tooltip title="Pattern analysis" placement="right">*/}
+            {/*    <span>*/}
+            {/*    <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {*/}
+            {/*        setOpenPatternAnalysisPopup(true)*/}
+            {/*    }}>*/}
+            {/*        <RouteIcon/>*/}
+            {/*    </IconButton>*/}
+            {/*    </span>*/}
+            {/*</Tooltip>*/}
             <Divider/>
             <Tooltip title="Show data" placement="right">
                 <span>
@@ -342,6 +343,16 @@ export function DetailTab(props: Props) {
                     </Button>
                 </DialogActions>
             </Dialog>
+            {isLoadDataPopupOpen &&
+                <LoadDataPopup
+                    loadEdges={false}
+                    graphManager={props.graphManager}
+                    selectedDataManager={props.selectedDataManager}
+                    isOpen={isLoadDataPopupOpen}
+                    setOpen={setLoadDataPopupOpen}>
+                </LoadDataPopup>
+            }
+
         </Stack>
     );
 }

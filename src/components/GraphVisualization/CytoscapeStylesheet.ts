@@ -114,7 +114,8 @@ export const CYTOSCAPE_STYLESHEET = [
             'arrow-scale': 0.4,
             'color': SELECTED_COLOR,
             'target-arrow-color': SELECTED_COLOR,
-            'source-arrow-color': SELECTED_COLOR
+            'source-arrow-color': SELECTED_COLOR,
+            'z-index': 10000000,
         }
     }, {
         selector: 'node[faded="true"]',
@@ -129,17 +130,6 @@ export const CYTOSCAPE_STYLESHEET = [
         style: {
             label: 'data(name)'
         }
-    }, {
-        selector: '.manualEdgeSelect',
-        css: {
-            'line-color': SELECTED_COLOR,
-            'width': 1,
-            'arrow-scale': 0.4,
-            'color': SELECTED_COLOR,
-            'target-arrow-color': SELECTED_COLOR,
-            'source-arrow-color': SELECTED_COLOR
-        }
-
     }, {
         selector: '.manualEdgeHighlight',
         css: {
@@ -168,6 +158,7 @@ export const CYTOSCAPE_STYLESHEET = [
         css: {
             'background-color': SELECTED_COLOR,
             'color': SELECTED_COLOR,
+            'z-index': 10000000,
         }
     }, {
         selector: '.hideLabels',//TODO: Add setting for hiding labels
