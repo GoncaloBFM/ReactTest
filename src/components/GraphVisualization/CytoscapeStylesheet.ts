@@ -55,15 +55,15 @@ export const CYTOSCAPE_STYLESHEET = [
             label: 'data(name)',
             'background-image': '/person.svg',
         }
-    }, {
-        selector: 'node[expanded="false"]',
-        style: {
-            'border-position':'inside',
-            'border-color':'black',
-            'border-opacity': 1,
-            'border-style': 'dotted',
-            'border-width': 0.6,
-        }
+    // }, {
+    //     selector: 'node[expanded="false"]',
+    //     style: {
+    //         'border-position':'inside',
+    //         'border-color':'black',
+    //         'border-opacity': 1,
+    //         'border-style': 'dotted',
+    //         'border-width': 0.6,
+    //     }
     }, {
         selector: 'node[type="account"]',
         style: {

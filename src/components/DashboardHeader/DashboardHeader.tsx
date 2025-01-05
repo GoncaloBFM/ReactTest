@@ -63,6 +63,7 @@ export function DashboardHeader(props: Props) {
                     {isLoadDataPopupOpen &&
                         <LoadDataPopup
                             loadEdges={false}
+                            originNodeIds={[]}
                             graphManager={props.graphManager}
                             selectedDataManager={props.selectedDataManager}
                             isOpen={isLoadDataPopupOpen}
@@ -139,9 +140,6 @@ export function DashboardHeader(props: Props) {
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpenSettingsPopup(false)}>
-                        Save
-                    </Button>
                     <Button onClick={() => setOpenSettingsPopup(false)} autoFocus>
                         Close
                     </Button>

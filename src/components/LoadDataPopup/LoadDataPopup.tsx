@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {
     Box,
     Button,
@@ -27,7 +27,7 @@ import {NodeType} from "@/types/NodeType";
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
 import {parseRawNode} from "@/utils/responseParser";
 import {GraphManager} from "@/hooks/useGraphDataManager";
-import {searchDatabase, SearchResponse} from "@/utils/queryGenerator";
+import {searchDatabase, SearchResponse, SearchType} from "@/utils/queryGenerator";
 import {EdgeType} from "@/types/EdgeType";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 import {GraphElement} from "@/types/GraphElement";
@@ -35,25 +35,27 @@ import {any} from "prop-types";
 import {bifurcateBy} from "@/utils/array";
 import {GraphNode} from "@/types/GraphNode";
 import {GraphEdge} from "@/types/GraphEdge";
+import Divider from "@mui/material/Divider";
 
 type Props = {
     isOpen: boolean,
     setOpen: (open: boolean) => void,
     loadEdges:boolean
     graphManager: GraphManager,
-    selectedDataManager: SelectedDataManager
+    selectedDataManager: SelectedDataManager,
+    originNodeIds: string[]
 };
 
-type typeSelectedElements = {[key:string]: GraphElement}
+type TypeSelectedElements = {[key:string]: GraphElement}
 
 const ALL_TYPE_TABLE_FILTER = 'all'
 const MAX_ENTITIES = 100
 const MAX_RELATIONSHIPS = 10000
 
 export function LoadDataPopup(props: Props) {
-    const [elementsSelected, setElementsSelected] = useState<typeSelectedElements>({})
-    const [typeTableFilter, setTypeTableFilter] = useState<string>(NodeType.person)
-    const [elementTypeTableFilter, setElementTypeTableFilter] = useState<string>(ElementType.node)
+    const [elementsSelected, setElementsSelected] = useState<TypeSelectedElements>({})
+    const [typeTableFilter, setTypeTableFilter] = useState<string>(ALL_TYPE_TABLE_FILTER)
+    const [elementTypeTableFilter, setElementTypeTableFilter] = useState<(typeof ElementType)[keyof typeof ElementType]>(ElementType.node)
     const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [sorting, setSorting] = useState<MRT_SortingState>([]);
@@ -64,6 +66,7 @@ export function LoadDataPopup(props: Props) {
         pageSize: 10,
     });
     const [openTooManyElementsPopup, setOpenTooManyElementsPopup] = useState(false)
+    const setOpen = props.setOpen
 
     const {
         data: { data = [], count } = {}, //your data and api response will probably be different
@@ -75,6 +78,7 @@ export function LoadDataPopup(props: Props) {
         queryKey: [
             'table-data',
             typeTableFilter,
+            props.originNodeIds,
             nodesToFilterBy,
             elementTypeTableFilter,
             columnFilters, //refetch when columnFilters changes
@@ -86,6 +90,7 @@ export function LoadDataPopup(props: Props) {
         queryFn: async () => {
             return searchDatabase(
                 elementTypeTableFilter,
+                props.originNodeIds,
                 nodesToFilterBy,
                 true,
                 pagination.pageIndex,
@@ -110,10 +115,24 @@ export function LoadDataPopup(props: Props) {
         (TABLE_COLUMNS as any)[(typeTableFilter == ALL_TYPE_TABLE_FILTER ? elementTypeTableFilter : typeTableFilter) as any].filter((e: any) => e.onDB == true)
         , [typeTableFilter, elementTypeTableFilter]
     )
-    const closePopup = () => {
+    const closePopup = useCallback(() => {
         setElementsSelected({})
-        props.setOpen(false);
-    }
+        setOpen(false);
+    }, [setOpen])
+
+    const importNodes = useCallback((elements: TypeSelectedElements) => {
+        setNodesToFilterBy(Object.keys(elements))
+        setElementTypeTableFilter(ElementType.edge)
+        setTypeTableFilter(ALL_TYPE_TABLE_FILTER)
+        setColumnFilters([])
+    }, [])
+
+    const importEdges = useCallback((elements: TypeSelectedElements) => {
+        const [newNodes, newEdges] = bifurcateBy(Object.values(elements), e=> e.elementType == ElementType.node)
+        props.graphManager.addToGraph(newNodes as GraphNode[], newEdges as GraphEdge[])
+        props.selectedDataManager.setSelectedElements(newNodes.length > 0 ? newNodes : newEdges)
+        closePopup()
+    }, [closePopup, props.graphManager, props.selectedDataManager])
 
     const table = useMaterialReactTable({
         columns: columns as any,
@@ -139,35 +158,19 @@ export function LoadDataPopup(props: Props) {
         manualSorting: true, //turn off built-in client-side sorting
         renderToolbarInternalActions: ({ table }) => (
             <Box sx={{ display: 'flex'}}>
-                <Button size={'small'} onClick={() => {
-                    if (typeTableFilter == ALL_TYPE_TABLE_FILTER) {
-                        setElementsSelected({})
-                        return
-                    }
-                    const filteredElements = {} as typeSelectedElements
-                    Object.values(elementsSelected).forEach((v: GraphElement) => {
-                       if (v.type != typeTableFilter) {
-                           filteredElements[v.id] = v
-                       }
-                    })
-                    setElementsSelected(filteredElements)
-                }}> Deselect all </Button>
-                <Button size={'small'} onClick={() => {
-                    if ((count == undefined) || (elementTypeTableFilter == ElementType.node && count > MAX_ENTITIES) || (elementTypeTableFilter == ElementType.edge && count > MAX_RELATIONSHIPS)) {
-                        setOpenTooManyElementsPopup(true)
-                        setForceIsLoading(false)
-                        return
-                    }
-                    setForceIsLoading(true)
-                    searchDatabase(elementTypeTableFilter, nodesToFilterBy, false, 0, 0, typeTableFilter == ALL_TYPE_TABLE_FILTER ? '' : typeTableFilter, columnFilters as any, sorting as any).then(e=> {
-                        const newElements = {} as typeSelectedElements
-                        e.data.forEach((v: GraphElement) => {
-                            newElements[v.id] = v
-                        })
-                        setElementsSelected(newElements)
-                        setForceIsLoading(false)
-                    })
-                }}> Select all </Button>
+                {/*<Button size={'small'} onClick={() => {*/}
+                {/*    if (typeTableFilter == ALL_TYPE_TABLE_FILTER) {*/}
+                {/*        setElementsSelected({})*/}
+                {/*        return*/}
+                {/*    }*/}
+                {/*    const filteredElements = {} as typeSelectedElements*/}
+                {/*    Object.values(elementsSelected).forEach((v: GraphElement) => {*/}
+                {/*       if (v.type != typeTableFilter) {*/}
+                {/*           filteredElements[v.id] = v*/}
+                {/*       }*/}
+                {/*    })*/}
+                {/*    setElementsSelected(filteredElements)*/}
+                {/*}}> Deselect all </Button>*/}
                 <MRT_ShowHideColumnsButton table={table} />
             </Box>
         ),
@@ -216,6 +219,7 @@ export function LoadDataPopup(props: Props) {
                 newSelectedElementsIds.forEach(newId =>
                     newSelectedElements[newId] = data.find((e:any) => e.id == newId)
                 )
+                console.log(newSelectedElements)
                 return newSelectedElements
             }
             setElementsSelected(newUpdater)
@@ -259,25 +263,54 @@ export function LoadDataPopup(props: Props) {
                             {/*    closePopup()*/}
                             {/*}}>Add selection to graph*/}
                             {/*</Button>*/}
-                            <Button disabled={elementTypeTableFilter == ElementType.node} size={'small'} onClick={() => {
-                                setNodesToFilterBy([])
-                                setElementTypeTableFilter(ElementType.node)
-                                setTypeTableFilter(NodeType.person)
-                                setColumnFilters([])
-                            }}>Back</Button>
+                            {/*<Button disabled={elementTypeTableFilter == ElementType.node} size={'small'} onClick={() => {*/}
+                            {/*    setNodesToFilterBy([])*/}
+                            {/*    setElementTypeTableFilter(ElementType.node)*/}
+                            {/*    setTypeTableFilter(NodeType.person)*/}
+                            {/*    setColumnFilters([])*/}
+                            {/*    //TODO: clean edges from elementsSelected*/}
+                            {/*}}>Back</Button>*/}
+                            <Button size={'small'} onClick={() => {
+                                if ((count == undefined) || (elementTypeTableFilter == ElementType.node && count > MAX_ENTITIES) || (elementTypeTableFilter == ElementType.edge && count > MAX_RELATIONSHIPS)) {
+                                    setOpenTooManyElementsPopup(true)
+                                    setForceIsLoading(false)
+                                    return
+                                }
+                                setForceIsLoading(true)
+                                const result = searchDatabase(
+                                    elementTypeTableFilter,
+                                    props.originNodeIds,
+                                    nodesToFilterBy,
+                                    false,
+                                    0,
+                                    0,
+                                    typeTableFilter == ALL_TYPE_TABLE_FILTER ? '' : typeTableFilter,
+                                    columnFilters as any,
+                                    sorting as any
+                                )
+                                result.then(e=> {
+                                    const newElements = {} as TypeSelectedElements
+                                    e.data.forEach((v: GraphElement) => {
+                                        newElements[v.id] = v
+                                    })
+                                    const allElements = {...newElements, ...elementsSelected}
+                                    setElementsSelected(allElements)
+                                    if (elementTypeTableFilter == ElementType.node) {
+                                        importNodes(allElements)
+                                    } else {
+                                        importEdges(allElements)
+                                    }
+                                    setForceIsLoading(false)
+                                })
+                            }}> Add entire table </Button>
+                            <Divider orientation="vertical" ></Divider>
                             {elementTypeTableFilter == ElementType.node
-                                ? <Button disabled={selectedElementsCount.length == 0} size={'small'} onClick={() => {
-                                    setNodesToFilterBy(Object.keys(elementsSelected))
-                                    setElementTypeTableFilter(ElementType.edge)
-                                    setTypeTableFilter(EdgeType.connection)
-                                    setColumnFilters([])
-                                }}>Next</Button>
-                                : <Button disabled={selectedElementsCount.length == 0} size={'small'} onClick={() => {
-                                    const [newNodes, newEdges] = bifurcateBy(Object.values(elementsSelected), e=> e.elementType == ElementType.node)
-                                    props.graphManager.addToGraph(newNodes as GraphNode[], newEdges as GraphEdge[])
-                                    props.selectedDataManager.setSelectedElements(newNodes)
-                                    closePopup()
-                                }}>Import Selected</Button>
+                                ? <Button disabled={selectedElementsCount.length == 0} size={'small'} onClick={() =>
+                                    importNodes(elementsSelected)
+                                }>Add selected nodes</Button>
+                                : <Button disabled={selectedElementsCount.length == 0} size={'small'} onClick={() =>
+                                    importEdges(elementsSelected)
+                                }>Add selected edges</Button>
                             }
                         </Stack>
                     </Stack>

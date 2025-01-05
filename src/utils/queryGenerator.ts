@@ -2,14 +2,21 @@ import { SERVER_URL } from "@/app/definitions";
 import {ElementType} from "@/types/ElementType";
 import {parseRawEdge, parseRawNode} from "@/utils/responseParser";
 import {GraphElement} from "@/types/GraphElement";
+import {EdgeType} from "@/types/EdgeType";
 
 export type SearchResponse = {
     data: GraphElement[];
     count: number
 };
 
+export const SearchType = {
+    all: 'all',
+    neighbor: 'neighbors'
+} as const
+
 export const searchDatabase = async (
-    elementType: string,
+    elementType: (typeof ElementType)[keyof typeof ElementType],
+    originNodes: string[],
     nodesToFilterBy: string[],
     usePagination: boolean,
     pageIndex: number,
@@ -19,17 +26,12 @@ export const searchDatabase = async (
     sorting: Record<string, string>[]
     ) => {
 
-    if (elementType != ElementType.node && elementType != ElementType.edge) {
-        throw new Error(`Element type "${elementType}" unknown`);
-    }
-
-    const endpoint = elementType == ElementType.node ? '/nodes' : '/edges'
+    const endpoint = `/${elementType}s`
 
     const fetchURL = new URL(endpoint, SERVER_URL);
 
-    if (elementType == ElementType.edge) {
-        fetchURL.searchParams.set('node_ids', JSON.stringify(nodesToFilterBy));
-    }
+    fetchURL.searchParams.set('origin-nodes', JSON.stringify(originNodes));
+    fetchURL.searchParams.set('filter-by-nodes', JSON.stringify(nodesToFilterBy));
 
     if (usePagination) {
         fetchURL.searchParams.set(

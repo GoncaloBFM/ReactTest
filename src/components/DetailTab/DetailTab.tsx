@@ -60,6 +60,8 @@ type Props = {
     setShowBasicAnalysis: Dispatch<SetStateAction<boolean>>
     showFlowAnalysis: boolean
     setShowFlowAnalysis: Dispatch<SetStateAction<boolean>>
+    showPatternAnalysis: boolean
+    setShowPatternAnalysis: Dispatch<SetStateAction<boolean>>
 };
 
 export function DetailTab(props: Props) {
@@ -89,15 +91,6 @@ export function DetailTab(props: Props) {
                     </IconButton>
                 </span>
             </Tooltip>
-            {/*<Tooltip title="Pattern analysis" placement="right">*/}
-            {/*    <span>*/}
-            {/*    <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {*/}
-            {/*        setOpenPatternAnalysisPopup(true)*/}
-            {/*    }}>*/}
-            {/*        <RouteIcon/>*/}
-            {/*    </IconButton>*/}
-            {/*    </span>*/}
-            {/*</Tooltip>*/}
             <Divider/>
             <Tooltip title="Show data" placement="right">
                 <span>
@@ -117,6 +110,7 @@ export function DetailTab(props: Props) {
                     color={props.showBasicAnalysis ? 'primary' : 'default'}
                     onClick={() => {
                         props.setShowFlowAnalysis(false)
+                        props.setShowPatternAnalysis(false)
                         props.setShowBasicAnalysis(!props.showBasicAnalysis);
                     }}
                 >
@@ -127,13 +121,25 @@ export function DetailTab(props: Props) {
             <Tooltip title="Flow analysis" placement="right">
                 <span>
                 <IconButton
-                            color={props.showFlowAnalysis ? 'primary' : 'default'}
-                            onClick={() => {
-                                props.setShowBasicAnalysis(false)
-                                props.setShowFlowAnalysis(!props.showFlowAnalysis)
-                            }
-                }>
+                    color={props.showFlowAnalysis ? 'primary' : 'default'}
+                    onClick={() => {
+                        props.setShowBasicAnalysis(false)
+                        props.setShowPatternAnalysis(false)
+                        props.setShowFlowAnalysis(!props.showFlowAnalysis)
+                    }
+                    }>
                     <CallSplit/>
+                </IconButton>
+                </span>
+            </Tooltip>
+            <Tooltip title="Pattern analysis" placement="right">
+                <span>
+                <IconButton onClick={() => {
+                    props.setShowBasicAnalysis(false)
+                    props.setShowFlowAnalysis(false)
+                    props.setShowPatternAnalysis(!props.showPatternAnalysis)
+                }}>
+                    <RouteIcon/>
                 </IconButton>
                 </span>
             </Tooltip>
@@ -346,6 +352,7 @@ export function DetailTab(props: Props) {
             {isLoadDataPopupOpen &&
                 <LoadDataPopup
                     loadEdges={false}
+                    originNodeIds={data.map(e => e.id)}
                     graphManager={props.graphManager}
                     selectedDataManager={props.selectedDataManager}
                     isOpen={isLoadDataPopupOpen}

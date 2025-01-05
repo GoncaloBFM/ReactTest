@@ -14,11 +14,13 @@ import {Histogram} from "@/components/Histogram/Histogram";
 import {BasicAnalysis} from "@/components/BasicAnalysis/BasicAnalysis";
 import {useEffect, useState} from "react";
 import {FlowAnalysis} from "@/components/FlowAnalysis/FlowAnalysis";
+import {PatternAnalysis} from "@/components/PatternAnalysis/PatternAnalysis";
 
 
 export default function DashboardLayout() {
     const [showBasicAnalysis, setShowBasicAnalysis] = useState(false)
     const [showFlowAnalysis, setShowFlowAnalysis] = useState(false)
+    const [showPatternAnalysis, setShowPatternAnalysis] = useState(false)
     const [hideLabels, setHideLabels] = useState(false)
 
     const {graphData, graphManager, isLoading} = useGraphDataManager(
@@ -78,21 +80,35 @@ export default function DashboardLayout() {
                                 setShowBasicAnalysis={setShowBasicAnalysis}
                                 showFlowAnalysis={showFlowAnalysis}
                                 setShowFlowAnalysis={setShowFlowAnalysis}
+                                setShowPatternAnalysis={setShowPatternAnalysis}
+                                showPatternAnalysis={showPatternAnalysis}
                             />
                         </div>
                     </div>
                     {showBasicAnalysis &&
-                        <div className={styles.basicAnalysis}>
-                            <BasicAnalysis selectedDataManager={selectedDataManager} graphData={graphData}></BasicAnalysis>
+                        <div className={styles.analysis}>
+                            <BasicAnalysis
+                                selectedDataManager={selectedDataManager}
+                                graphData={graphData}>
+                            </BasicAnalysis>
                         </div>
                     }
                     {showFlowAnalysis &&
-                        <div className={styles.basicAnalysis}>
+                        <div className={styles.analysis}>
                             <FlowAnalysis
                                 cytoscapeManager={cytoscapeManager}
                                 selectedDataManager={selectedDataManager}
                                 graphData={graphData}>
                             </FlowAnalysis>
+                        </div>
+                    }
+                    {showPatternAnalysis &&
+                        <div className={styles.analysis}>
+                            <PatternAnalysis
+                                cytoscapeManager={cytoscapeManager}
+                                selectedDataManager={selectedDataManager}
+                                graphData={graphData}>
+                            </PatternAnalysis>
                         </div>
                     }
                 </div>

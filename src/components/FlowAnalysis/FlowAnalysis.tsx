@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 import Image from "next/image";
-import statsIcon from "../../../public/stats.svg";
+import statsIcon from "../../../public/flow.svg";
 import {EdgeType} from "@/types/EdgeType";
 import {TransactionEdge} from "@/types/TransactionEdge";
 import {SafeMap} from "@/utils/SafeMap";
@@ -98,7 +98,7 @@ export function FlowAnalysis(props: Props) {
         }}
         key={e.nodeId}
         className={styles.entry}
-        secondary={`In ${e.in.toFixed(2)} Out: ${e.out.toFixed(2)} Net: ${e.available.toFixed(2)}`}
+        secondary={`In: ${e.in.toFixed(2)} Out: ${e.out.toFixed(2)} Net: ${e.available.toFixed(2)}`}
         primary={`${e.nodeId} (first known activity: ${e.firstDate == MAX_DATE ? 'unknown' : datetimeToString(new Date(e.firstDate))})`}>
     </ListItemText>
     ,[props.cytoscapeManager, props.graphData.nodesMap, props.selectedDataManager])
@@ -112,7 +112,7 @@ export function FlowAnalysis(props: Props) {
         }}
         key={e.nodeId}
         className={styles.entry}
-        secondary={`In ${e.in.toFixed(2)}`}
+        secondary={`In: ${e.in.toFixed(2)}`}
         primary={`${e.nodeId} (first known activity: ${e.firstDate == MAX_DATE ? 'unknown' : datetimeToString(new Date(e.firstDate))})`}>
     </ListItemText>
     , [props.cytoscapeManager, props.graphData.nodesMap, props.selectedDataManager])
