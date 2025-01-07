@@ -75,47 +75,53 @@ export function FlowAnalysis(props: Props) {
     const [middleOpen, setMiddleOpen] = React.useState(true);
 
     //TODO: refactor and remove duplicated code on events
-    const formatWellEntry = useCallback((e: BankEntry) => <ListItemText
-        onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
-        onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
-        onClick={()=>{
-            props.cytoscapeManager.removeElementHighlight(e.nodeId)
-            props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
-        }}
-        key={e.nodeId}
-        className={styles.entry}
-        secondary={`Out: ${e.out.toFixed(2)}`}
-        primary={`${e.nodeId} (first known activity: ${e.firstDate == MAX_DATE ? 'unknown' : datetimeToString(new Date(e.firstDate))})`}>
-    </ListItemText>
+    const formatWellEntry = useCallback((e: BankEntry) => <ListItemButton>
+            <ListItemText
+                onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
+                onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
+                onClick={()=>{
+                    props.cytoscapeManager.removeElementHighlight(e.nodeId)
+                    props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+                }}
+                key={e.nodeId}
+                className={styles.entry}
+                secondary={`Out: ${e.out.toFixed(2)} USD`}
+                primary={`${e.nodeId} (first activity: ${e.firstDate == MAX_DATE ? 'unknown' : datetimeToString(new Date(e.firstDate))})`}>
+            </ListItemText>
+        </ListItemButton>
         ,[props.cytoscapeManager, props.graphData.nodesMap, props.selectedDataManager])
 
-    const formatMiddleEntry = useCallback((e: BankEntry) => <ListItemText
-        onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
-        onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
-        onClick={()=>{
-            props.cytoscapeManager.removeElementHighlight(e.nodeId)
-            props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
-        }}
-        key={e.nodeId}
-        className={styles.entry}
-        secondary={`In: ${e.in.toFixed(2)} Out: ${e.out.toFixed(2)} Net: ${e.available.toFixed(2)}`}
-        primary={`${e.nodeId} (first known activity: ${e.firstDate == MAX_DATE ? 'unknown' : datetimeToString(new Date(e.firstDate))})`}>
-    </ListItemText>
-    ,[props.cytoscapeManager, props.graphData.nodesMap, props.selectedDataManager])
+    const formatMiddleEntry = useCallback((e: BankEntry) => <ListItemButton>
+            <ListItemText
+                onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
+                onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
+                onClick={()=>{
+                    props.cytoscapeManager.removeElementHighlight(e.nodeId)
+                    props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+                }}
+                key={e.nodeId}
+                className={styles.entry}
+                secondary={`In: ${e.in.toFixed(2)} USD Out: ${e.out.toFixed(2)} USD Net: ${e.available.toFixed(2)} USD`}
+                primary={`${e.nodeId} (first activity: ${e.firstDate == MAX_DATE ? 'unknown' : datetimeToString(new Date(e.firstDate))})`}>
+            </ListItemText>
+        </ListItemButton>
+        ,[props.cytoscapeManager, props.graphData.nodesMap, props.selectedDataManager])
 
-    const formatSinkEntry = useCallback((e: BankEntry) => <ListItemText
-        onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
-        onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
-        onClick={()=>{
-            props.cytoscapeManager.removeElementHighlight(e.nodeId)
-            props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
-        }}
-        key={e.nodeId}
-        className={styles.entry}
-        secondary={`In: ${e.in.toFixed(2)}`}
-        primary={`${e.nodeId} (first known activity: ${e.firstDate == MAX_DATE ? 'unknown' : datetimeToString(new Date(e.firstDate))})`}>
-    </ListItemText>
-    , [props.cytoscapeManager, props.graphData.nodesMap, props.selectedDataManager])
+    const formatSinkEntry = useCallback((e: BankEntry) => <ListItemButton>
+            <ListItemText
+                onMouseEnter={()=> {props.cytoscapeManager.addElementHighlight(e.nodeId)}}
+                onMouseLeave={() => {props.cytoscapeManager.removeElementHighlight(e.nodeId)}}
+                onClick={()=>{
+                    props.cytoscapeManager.removeElementHighlight(e.nodeId)
+                    props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+                }}
+                key={e.nodeId}
+                className={styles.entry}
+                secondary={`In: ${e.in.toFixed(2)} USD`}
+                primary={`${e.nodeId} (first activity: ${e.firstDate == MAX_DATE ? 'unknown' : datetimeToString(new Date(e.firstDate))})`}>
+            </ListItemText>
+        </ListItemButton>
+        , [props.cytoscapeManager, props.graphData.nodesMap, props.selectedDataManager])
 
     const [wellsList, middlesList, sinksList] = useMemo(() => {
         const data = (props.selectedDataManager.subSelectedElements.length == 0 ? props.selectedDataManager.selectedElements : props.selectedDataManager.subSelectedElements) as GraphEdge[]

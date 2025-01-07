@@ -1,5 +1,4 @@
 import styles from './DashboardLayout.module.scss'
-import {Stack} from "@mui/material";
 import {DashboardHeader} from "../DashboardHeader/DashboardHeader";
 import {GraphVisualization} from "@/components/GraphVisualization/GraphVisualization";
 import {LoadingSpinner} from "../LoadingSpinner/LoadingSpinner";
@@ -7,21 +6,19 @@ import {useGraphDataManager} from "@/hooks/useGraphDataManager";
 import {useCytoscapeManager} from "@/hooks/useCytoscapeManager";
 import {DataTable} from "@/components/DataTable/DataTable";
 import {useSelectedDataManager} from "@/hooks/useSelectedDataManager";
-import {DetailTab} from "@/components/DetailTab/DetailTab";
+import {ToolsTab} from "@/components/DetailTab/ToolsTab";
 import Divider from "@mui/material/Divider";
-import {Summary} from "@/components/Summary/Summary";
-import {Histogram} from "@/components/Histogram/Histogram";
 import {BasicAnalysis} from "@/components/BasicAnalysis/BasicAnalysis";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {FlowAnalysis} from "@/components/FlowAnalysis/FlowAnalysis";
 import {PatternAnalysis} from "@/components/PatternAnalysis/PatternAnalysis";
+import {AnalysisTab} from "@/types/AnalysisTab";
 
 
 export default function DashboardLayout() {
-    const [showBasicAnalysis, setShowBasicAnalysis] = useState(false)
-    const [showFlowAnalysis, setShowFlowAnalysis] = useState(false)
-    const [showPatternAnalysis, setShowPatternAnalysis] = useState(false)
+    const [showAnalysisTab, setShowAnalysisTab] = useState<AnalysisTab>(AnalysisTab.None);
     const [hideLabels, setHideLabels] = useState(false)
+    const [dimElements, setDimElements] = useState(false);
 
     const {graphData, graphManager, isLoading} = useGraphDataManager(
         () => {
@@ -35,23 +32,6 @@ export default function DashboardLayout() {
     )
     const cytoscapeManager = useCytoscapeManager()
 
-
-    useEffect(() => {
-        const handleKeyDown = (e:any) => {
-            if (e.repeat) return; // Do nothing
-            if (e.key == 'Escape') {
-                setShowBasicAnalysis(false)
-                setShowFlowAnalysis(false)
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-
-    }, []);
-
-
     return (
         <div className={styles.DashboardLayout}>
             {isLoading && <LoadingSpinner/>}
@@ -59,33 +39,33 @@ export default function DashboardLayout() {
                 <DashboardHeader hideLabels={hideLabels}
                                  graphManager={graphManager}
                                  setHideLabels={setHideLabels}
+                                 dimElements={dimElements}
+                                 setDimElements={setDimElements}
                                  selectedDataManager={selectedDataManager}
                                  cytoscapeManager={cytoscapeManager}></DashboardHeader></div>
             <div className={styles.visualizations}>
                 <div className={styles.top}>
                     <div className={styles.graph}>
                         <GraphVisualization
+                            dimElements={dimElements}
+                            setDimElements={setDimElements}
                             cytoscapeManager={cytoscapeManager}
                             hideLabels={hideLabels}
                             setHideLabels={setHideLabels}
                             selectedDataManager={selectedDataManager}
                             graphData={graphData}/>
                         <div className={styles.detailTab}>
-                            <DetailTab
+                            <ToolsTab
                                 graphData={graphData}
                                 selectedDataManager={selectedDataManager}
                                 graphManager={graphManager}
                                 cytoscapeManager={cytoscapeManager}
-                                showBasicAnalysis={showBasicAnalysis}
-                                setShowBasicAnalysis={setShowBasicAnalysis}
-                                showFlowAnalysis={showFlowAnalysis}
-                                setShowFlowAnalysis={setShowFlowAnalysis}
-                                setShowPatternAnalysis={setShowPatternAnalysis}
-                                showPatternAnalysis={showPatternAnalysis}
+                                showAnalysisTab={showAnalysisTab}
+                                setShowAnalysisTab={setShowAnalysisTab}
                             />
                         </div>
                     </div>
-                    {showBasicAnalysis &&
+                    {showAnalysisTab == AnalysisTab.Statistics &&
                         <div className={styles.analysis}>
                             <BasicAnalysis
                                 selectedDataManager={selectedDataManager}
@@ -93,7 +73,7 @@ export default function DashboardLayout() {
                             </BasicAnalysis>
                         </div>
                     }
-                    {showFlowAnalysis &&
+                    {showAnalysisTab == AnalysisTab.FlowAnalysis &&
                         <div className={styles.analysis}>
                             <FlowAnalysis
                                 cytoscapeManager={cytoscapeManager}
@@ -102,11 +82,12 @@ export default function DashboardLayout() {
                             </FlowAnalysis>
                         </div>
                     }
-                    {showPatternAnalysis &&
+                    {showAnalysisTab == AnalysisTab.PatternAnalysis &&
                         <div className={styles.analysis}>
                             <PatternAnalysis
                                 cytoscapeManager={cytoscapeManager}
                                 selectedDataManager={selectedDataManager}
+                                setShowAnalysisTab={setShowAnalysisTab}
                                 graphData={graphData}>
                             </PatternAnalysis>
                         </div>

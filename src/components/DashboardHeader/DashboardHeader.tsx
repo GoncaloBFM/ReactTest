@@ -39,6 +39,8 @@ type Props = {
     hideLabels: boolean
     setHideLabels: Dispatch<SetStateAction<boolean>>
     selectedDataManager: SelectedDataManager
+    dimElements: boolean
+    setDimElements: Dispatch<SetStateAction<boolean>>
 };
 
 export function DashboardHeader(props: Props) {
@@ -114,10 +116,23 @@ export function DashboardHeader(props: Props) {
                         </Select>
                         </Stack>
                         <Stack>
-                            Hide graph labels <Select size="small"
+                            Hide graph labels (L key) <Select size="small"
                                               onChange={e => props.setHideLabels(e.target.value == 'Yes')}
                                               value={props.hideLabels ? 'Yes' : 'No'}
                                               inputProps={{ size:'small' }}
+                        >
+                            <MenuItem value={'Yes'}>Yes</MenuItem>
+                            <MenuItem value={'No'}>No</MenuItem>
+                        </Select>
+                        </Stack>
+                        <Stack>
+                            Highlight on mouse over <Select size="small"
+                                                              onChange={e => {
+                                                                  const result = e.target.value == 'Yes'
+                                                                  props.setDimElements(result)
+                                                              }}
+                                                              value={props.dimElements ? 'Yes' : 'No'}
+                                                              inputProps={{ size:'small' }}
                         >
                             <MenuItem value={'Yes'}>Yes</MenuItem>
                             <MenuItem value={'No'}>No</MenuItem>

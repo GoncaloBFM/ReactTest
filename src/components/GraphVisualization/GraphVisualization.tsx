@@ -1,7 +1,7 @@
-import React, {Dispatch, SetStateAction, useCallback, useEffect, useMemo} from 'react';
+import React, {Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState} from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import styles from './GraphVisualization.module.scss';
-import cytoscape from 'cytoscape';
+import cytoscape, {NodeSingular} from 'cytoscape';
 // @ts-ignore
 import COSEBilkent from 'cytoscape-cose-bilkent';
 // @ts-ignore
@@ -25,6 +25,7 @@ import {PersonNode} from "@/types/PersonNode";
 import compoundDragAndDrop from 'cytoscape-compound-drag-and-drop';
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 import {CompanyNode} from "@/types/CompanyNode";
+import {useSafeState} from "react-query/types/devtools/utils";
 
 //cytoscape.use(COSEBilkent);
 cytoscape.use( fcose );
@@ -35,6 +36,8 @@ type Props = {
     cytoscapeManager: CytoscapeManager
     hideLabels: boolean
     setHideLabels: Dispatch<SetStateAction<boolean>>
+    dimElements: boolean
+    setDimElements: Dispatch<SetStateAction<boolean>>
 };
 
 const EDGE_ID_SEPARATOR= '_'
@@ -47,6 +50,8 @@ export function GraphVisualization(props: Props) {
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
     const hideLabels = props.hideLabels
     const setHideLabels = props.setHideLabels
+    const dimElements = props.dimElements
+    const setDimElements = props.setDimElements
 
     //TODO: Add feature for box selection and multiple node dragging
     useEffect(() => {
@@ -63,6 +68,31 @@ export function GraphVisualization(props: Props) {
                     setSelectedElements([]);
             }
         };
+
+        const mouseInHandler = (e:any) => {
+            if (!dimElements || subSelectedElements.length > 0) {
+                return
+            }
+            const element = e.target
+            const neighborIds = element.isNode() ? (element as NodeSingular).neighborhood().map(e => e.id()) : [element.source().id(), element.target().id()]
+            const allIds = new Set(neighborIds.concat([element.id()]))
+            cy?.startBatch()
+            cy?.elements().forEach(
+                e => {
+                    if (!allIds.has(e.id())) {
+                        e.addClass('dimmedElement')
+                    }}
+            )
+            cy?.endBatch()
+        }
+
+
+        const mouseOutHandler = (e:any) => {
+            if (!dimElements) {
+                return
+            }
+            cy?.elements().removeClass('dimmedElement')
+        }
 
         const clickHandler = (e: any) => {
             const cytoscapeElement = e.target
@@ -83,15 +113,19 @@ export function GraphVisualization(props: Props) {
             }
         }
 
+        stale.on('mouseover', '*', mouseInHandler)
+        stale.on('mouseout', '*', mouseOutHandler)
         stale.on('click', '*', clickHandler);
         stale.on('tap', tapHandler);
         //stale.on('unselect', '*', unselectHandler);
         return () => {
             stale.off('click', '*', clickHandler);
             stale.off('tap', tapHandler);
+            stale.off('mouseover', '*', mouseInHandler)
+            stale.off('mouseout', '*', mouseOutHandler)
             //stale.off('unselect', '*', unselectHandler);
         }
-    }, [cy, setSelectedElements, selectedElements, props.graphData])
+    }, [cy, setSelectedElements, selectedElements, props.graphData, subSelectedElements, dimElements])
 
     const aggregateTransactionEdge = useCallback((edgesGroup: Array<TransactionEdge>, subSelectedIds: Set<string>) => {
         const amount = edgesGroup.reduce((amount, edge) => amount = amount + edge.amountPaid, 0)
@@ -107,6 +141,7 @@ export function GraphVisualization(props: Props) {
                 faded: subSelectedIds.size == 0 || subSelectedIds.intersection(new Set(ids)).size > 0 ? 'false' : 'true',
                 elementType: ElementType.edge,
                 label: label,
+                amountPaid: amount,
                 graphIds: ids
             }
         }
@@ -123,9 +158,12 @@ export function GraphVisualization(props: Props) {
     useEffect(() => {
         const handleKeyDown = (e:any) => {
             if (e.repeat) return; // Do nothing
-            if (e.key == 'l') {
+            if (e.key == 'l' || e.key == 'L') {
                 setHideLabels(!hideLabels)
             }
+            // if (e.key == 'd' || e.key == 'D') {
+            //     setDimElements(!dimElements)
+            // }
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => {

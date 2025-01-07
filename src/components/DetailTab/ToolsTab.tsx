@@ -1,33 +1,28 @@
-import React, {Dispatch, SetStateAction, useEffect, useMemo, useState} from 'react';
+import React, {Dispatch, SetStateAction, useMemo, useState} from 'react';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import {
-    Box,
     Button,
-    Card,
-    CardActions,
-    CardContent,
-    CardHeader, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-    IconButton, ListItem, ListItemButton, ListItemIcon, Menu, MenuItem, Select, Stack, Tooltip, Typography,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    IconButton,
+    ListItem,
+    MenuItem,
+    Select,
+    Stack,
+    Tooltip,
+    Typography,
 } from "@mui/material";
 import {GraphManager} from "@/hooks/useGraphDataManager";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
-import Image from 'next/image'
-import styles from './DetailTab.module.scss'
-import personIcon from '../../../public/person.svg'
+import styles from './ToolsTab.module.scss'
 import CachedIcon from '@mui/icons-material/Cached';
-import accountIcon from '../../../public/account.svg'
-import networkIcon from '../../../public/network.svg'
-import {GraphElement} from "@/types/GraphElement";
 import {GraphData} from "@/types/GraphData";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import OpenWithIcon from "@mui/icons-material/OpenWith";
-import ClearIcon from "@mui/icons-material/Clear";
-import PersonIcon from '@mui/icons-material/Person';
 import Divider from '@mui/material/Divider';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import AddchartIcon from '@mui/icons-material/Addchart';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import {ElementType} from "@/types/ElementType";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -38,33 +33,24 @@ import CallMadeIcon from '@mui/icons-material/CallMade';
 import {GraphEdge} from "@/types/GraphEdge";
 import {GraphNode} from "@/types/GraphNode";
 import {EdgeType} from "@/types/EdgeType";
-import {TransactionEdge} from "@/types/TransactionEdge";
-import {mean, quantile, std, sum} from "@/utils/math";
-import {datetimeToString, millisecondsToDHM} from "@/utils/time";
-import {sortAscend, sortDescend} from "@/utils/array";
 import {CytoscapeManager} from "@/hooks/useCytoscapeManager";
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import RouteIcon from '@mui/icons-material/Route';
 import {AttachMoney, CallSplit} from "@mui/icons-material";
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
-import {Span} from "next/dist/server/lib/trace/tracer";
 import {LoadDataPopup} from "@/components/LoadDataPopup/LoadDataPopup";
+import {AnalysisTab} from "@/types/AnalysisTab";
 
 type Props = {
     selectedDataManager: SelectedDataManager
     cytoscapeManager: CytoscapeManager
     graphManager: GraphManager
     graphData: GraphData
-    showBasicAnalysis: boolean
-    setShowBasicAnalysis: Dispatch<SetStateAction<boolean>>
-    showFlowAnalysis: boolean
-    setShowFlowAnalysis: Dispatch<SetStateAction<boolean>>
-    showPatternAnalysis: boolean
-    setShowPatternAnalysis: Dispatch<SetStateAction<boolean>>
+    setShowAnalysisTab: Dispatch<SetStateAction<AnalysisTab>>
+    showAnalysisTab:AnalysisTab
 };
 
-export function DetailTab(props: Props) {
+export function ToolsTab(props: Props) {
     const [isLoadDataPopupOpen, setLoadDataPopupOpen] = useState(false);
     const [openDeleteGraphPopup, setOpenDeleteGraphPopup] = useState(false);
     const [openNoDataPopup, setOpenNoDataPopup] = useState(false);
@@ -107,39 +93,34 @@ export function DetailTab(props: Props) {
             <Tooltip title="Show statistics" placement="right">
                 <span>
                 <IconButton
-                    color={props.showBasicAnalysis ? 'primary' : 'default'}
+                    color={props.showAnalysisTab == AnalysisTab.Statistics ? 'primary' : 'default'}
                     onClick={() => {
-                        props.setShowFlowAnalysis(false)
-                        props.setShowPatternAnalysis(false)
-                        props.setShowBasicAnalysis(!props.showBasicAnalysis);
+                        props.setShowAnalysisTab(props.showAnalysisTab == AnalysisTab.Statistics ? AnalysisTab.None : AnalysisTab.Statistics);
                     }}
                 >
                     <BarChartIcon/>
                 </IconButton>
                 </span>
             </Tooltip>
-            <Tooltip title="Flow analysis" placement="right">
+            <Tooltip title="Pattern analysis" placement="right">
                 <span>
                 <IconButton
-                    color={props.showFlowAnalysis ? 'primary' : 'default'}
+                    color={props.showAnalysisTab == AnalysisTab.PatternAnalysis ? 'primary' : 'default'}
                     onClick={() => {
-                        props.setShowBasicAnalysis(false)
-                        props.setShowPatternAnalysis(false)
-                        props.setShowFlowAnalysis(!props.showFlowAnalysis)
-                    }
-                    }>
-                    <CallSplit/>
+                        props.setShowAnalysisTab(props.showAnalysisTab == AnalysisTab.PatternAnalysis ? AnalysisTab.None : AnalysisTab.PatternAnalysis);
+                    }}>
+                    <RouteIcon/>
                 </IconButton>
                 </span>
             </Tooltip>
-            <Tooltip title="Pattern analysis" placement="right">
+            <Tooltip title="Flow analysis" placement="right">
                 <span>
-                <IconButton onClick={() => {
-                    props.setShowBasicAnalysis(false)
-                    props.setShowFlowAnalysis(false)
-                    props.setShowPatternAnalysis(!props.showPatternAnalysis)
-                }}>
-                    <RouteIcon/>
+                <IconButton
+                    color={props.showAnalysisTab == AnalysisTab.FlowAnalysis ? 'primary' : 'default'}
+                    onClick={() => {
+                        props.setShowAnalysisTab(props.showAnalysisTab == AnalysisTab.FlowAnalysis ? AnalysisTab.None : AnalysisTab.FlowAnalysis);
+                    }}>
+                    <CallSplit/>
                 </IconButton>
                 </span>
             </Tooltip>

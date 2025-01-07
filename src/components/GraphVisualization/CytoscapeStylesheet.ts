@@ -41,6 +41,15 @@ export const CYTOSCAPE_STYLESHEET = [
             'text-background-shape': 'round-rectangle'
         }
     }, {
+        selector: '.dimmedElement',
+        style: {
+            'text-opacity': 0.2,
+            'background-opacity': 0.2,
+            'border-opacity': 0.2,
+            'background-image-opacity': 0.2,
+            'line-opacity': 0.2,
+        }
+    }, {
         selector: 'node[type="compound"]',
         style: {
             'background-color': '#f3f3f3',
@@ -126,18 +135,13 @@ export const CYTOSCAPE_STYLESHEET = [
             'background-image-opacity': 0.2
         }
     }, {
-        selector: 'edge[faded="true"]',
-        style: {
-            label: 'data(name)'
-        }
-    }, {
         selector: '.manualEdgeHighlight',
         css: {
-            'underlay-shape': 'round-rectangle',
+            'underlay-shape': 'ellipse',
+            'underlay-padding': 4,
             'underlay-opacity': .2,
             'underlay-color': HIGHLIGHTED_COLOR
         }
-
     },{
         selector: 'node[faded="true"]',
         style: {
