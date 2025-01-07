@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import {GraphManager} from "@/hooks/useGraphDataManager";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
+import LoupeOutlinedIcon from '@mui/icons-material/LoupeOutlined';
 import styles from './ToolsTab.module.scss'
 import CachedIcon from '@mui/icons-material/Cached';
 import {GraphData} from "@/types/GraphData";
@@ -77,7 +78,6 @@ export function ToolsTab(props: Props) {
                     </IconButton>
                 </span>
             </Tooltip>
-            <Divider/>
             <Tooltip title="Show data" placement="right">
                 <span>
                 <IconButton
@@ -86,22 +86,11 @@ export function ToolsTab(props: Props) {
                         setOpenShowDataPopup(true)
                     }}
                 >
-                    <ZoomInIcon/>
+                    <LoupeOutlinedIcon/>
                 </IconButton>
                 </span>
             </Tooltip>
-            <Tooltip title="Show statistics" placement="right">
-                <span>
-                <IconButton
-                    color={props.showAnalysisTab == AnalysisTab.Statistics ? 'primary' : 'default'}
-                    onClick={() => {
-                        props.setShowAnalysisTab(props.showAnalysisTab == AnalysisTab.Statistics ? AnalysisTab.None : AnalysisTab.Statistics);
-                    }}
-                >
-                    <BarChartIcon/>
-                </IconButton>
-                </span>
-            </Tooltip>
+            <Divider/>
             <Tooltip title="Pattern analysis" placement="right">
                 <span>
                 <IconButton
@@ -121,6 +110,18 @@ export function ToolsTab(props: Props) {
                         props.setShowAnalysisTab(props.showAnalysisTab == AnalysisTab.FlowAnalysis ? AnalysisTab.None : AnalysisTab.FlowAnalysis);
                     }}>
                     <CallSplit/>
+                </IconButton>
+                </span>
+            </Tooltip>
+            <Tooltip title="Show statistics" placement="right">
+                <span>
+                <IconButton
+                    color={props.showAnalysisTab == AnalysisTab.Statistics ? 'primary' : 'default'}
+                    onClick={() => {
+                        props.setShowAnalysisTab(props.showAnalysisTab == AnalysisTab.Statistics ? AnalysisTab.None : AnalysisTab.Statistics);
+                    }}
+                >
+                    <BarChartIcon/>
                 </IconButton>
                 </span>
             </Tooltip>

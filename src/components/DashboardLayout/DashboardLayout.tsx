@@ -78,6 +78,7 @@ export default function DashboardLayout() {
                             <FlowAnalysis
                                 cytoscapeManager={cytoscapeManager}
                                 selectedDataManager={selectedDataManager}
+                                setShowAnalysisTab={setShowAnalysisTab}
                                 graphData={graphData}>
                             </FlowAnalysis>
                         </div>

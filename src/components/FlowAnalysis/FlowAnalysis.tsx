@@ -1,16 +1,6 @@
 import styles from "@/components/FlowAnalysis/FlowAnalysis.module.scss";
 import React, {Dispatch, SetStateAction, useCallback, useMemo} from "react";
-import {
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    Collapse,
-    ListItem,
-    ListItemButton,
-    Stack,
-    Typography
-} from "@mui/material";
+import {Card, CardContent, CardHeader, Collapse, ListItemButton, Stack, Typography} from "@mui/material";
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 import Image from "next/image";
 import statsIcon from "../../../public/flow.svg";
@@ -25,11 +15,13 @@ import {bifurcateBy} from "@/utils/array";
 import {CytoscapeManager} from "@/hooks/useCytoscapeManager";
 import {GraphData} from "@/types/GraphData";
 import {GraphEdge} from "@/types/GraphEdge";
+import {AnalysisTab} from "@/types/AnalysisTab";
 
 type Props = {
     selectedDataManager: SelectedDataManager
     cytoscapeManager: CytoscapeManager
     graphData: GraphData
+    setShowAnalysisTab: Dispatch<SetStateAction<AnalysisTab>>
 }
 
 //type BankEntry = {nodeId: string, out:number, in:number, available: number, firstDate: number}
@@ -82,6 +74,7 @@ export function FlowAnalysis(props: Props) {
                 onClick={()=>{
                     props.cytoscapeManager.removeElementHighlight(e.nodeId)
                     props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+                    props.setShowAnalysisTab(AnalysisTab.Statistics)
                 }}
                 key={e.nodeId}
                 className={styles.entry}
@@ -98,6 +91,7 @@ export function FlowAnalysis(props: Props) {
                 onClick={()=>{
                     props.cytoscapeManager.removeElementHighlight(e.nodeId)
                     props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+                    props.setShowAnalysisTab(AnalysisTab.Statistics)
                 }}
                 key={e.nodeId}
                 className={styles.entry}
@@ -114,6 +108,7 @@ export function FlowAnalysis(props: Props) {
                 onClick={()=>{
                     props.cytoscapeManager.removeElementHighlight(e.nodeId)
                     props.selectedDataManager.setSelectedElements([props.graphData.nodesMap.get(e.nodeId)])
+                    props.setShowAnalysisTab(AnalysisTab.Statistics)
                 }}
                 key={e.nodeId}
                 className={styles.entry}
