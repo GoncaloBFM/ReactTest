@@ -1,8 +1,52 @@
 .DashboardLayout {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 50px 1fr;
+  overflow: hidden;
+  z-index: 0;
 
-  .plot,
-  .plotTable,
-  .tabbedVisualization {
-    height: 50vh;
+  .header {
+  }
+
+  .graph {
+    width: 100%;
+    height: 100%;
+  }
+
+  .detailTab {
+    width: 48px;
+    margin-top:1px;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+  }
+  .analysis {
+    height: 100%;
+    width: 30%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding-top: 1px;
+    box-sizing: border-box;
+  }
+
+  .topSplitPanel{
+    height: 100%;
+    width: 100%;
+  }
+
+  .visualizations {
+    overflow: hidden;
+
+    .top {
+      width: 100%;
+      height: 65%;
+      position: relative;
+    }
+
+    .bottom {
+      height: 35%;
+    }
   }
 }

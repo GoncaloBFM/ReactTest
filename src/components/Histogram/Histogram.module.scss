@@ -1,0 +1,19 @@
+.Histogram {
+  width: 100%;
+  height: 100%;
+  .histogramBody {
+    width: 100%;
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+  }
+  .plot {
+    width: 100%;
+    height: 100%;
+  }
+  .error{
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+    width: 100%;
+  }
+}
+

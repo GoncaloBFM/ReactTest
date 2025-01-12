@@ -1,0 +1,25 @@
+.Summary {
+  height: 100%;
+  width: 100%;
+  box-shadow: none;
+  .summaryBody {
+    width: 100%;
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+    overflow: auto;
+  }
+
+  .summaryBody &:last-child {
+    .summaryGrid {
+      overflow-y: scroll;
+      .summaryEntry {
+        height: fit-content;
+      }
+    }
+  }
+  .error{
+    height: calc(100% - 62px);
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

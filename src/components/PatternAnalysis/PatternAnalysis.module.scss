@@ -1,0 +1,26 @@
+.PatternAnalysis {
+  height: 100%;
+  width: 100%;
+  border-left: 1px solid rgba(0,0,0,.12);
+  .entry{
+    padding-left: 32px;
+  }
+  .listHeader {
+    padding-left: 0;
+  }
+  .analysisBody {
+    overflow: auto;
+    width: 100%;
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+  }
+  .error{
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+    width: 100%;
+  }
+  .pattern{
+    width: 45px;
+    height: 45px;
+  }
+}
