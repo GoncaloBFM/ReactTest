@@ -96,7 +96,11 @@ export function LoadDataPopup(props: Props) {
                 pagination.pageIndex,
                 pagination.pageSize,
                 typeTableFilter == ALL_TYPE_TABLE_FILTER ? '' : typeTableFilter,
-                columnFilters as any,
+                columnFilters.filter(e =>
+                    (e.id != 'amountPaid') &&  //TODO: remove these after non text db filters work properly
+                    (e.id != 'source') &&
+                    (e.id != 'target')
+                ) as any,
                 sorting as any
             )
         },
