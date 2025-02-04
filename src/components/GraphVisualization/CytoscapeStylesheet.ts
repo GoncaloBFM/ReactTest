@@ -23,7 +23,8 @@ export const CYTOSCAPE_STYLESHEET = [
             'text-background-opacity': 1,
             'background-image-containment': 'over',
             'background-width': '70%',
-            'background-height': '70%'
+            'background-height': '70%',
+            'z-index': 1,
         }
     }, {
         selector: 'edge',
@@ -38,16 +39,18 @@ export const CYTOSCAPE_STYLESHEET = [
             "text-margin-y": "0px",
             'text-background-opacity': 1,
             'text-background-color': '#eee  ',
-            'text-background-shape': 'round-rectangle'
+            'text-background-shape': 'round-rectangle',
+            'z-index': 1,
         }
     }, {
         selector: '.dimmedElement',
         style: {
-            'text-opacity': 0.2,
-            'background-opacity': 0.2,
-            'border-opacity': 0.2,
-            'background-image-opacity': 0.2,
-            'line-opacity': 0.2,
+            'z-index': 0,
+            'text-opacity': 0,
+            'background-opacity': 0,
+            'border-opacity': 0.1,
+            'background-image-opacity': 0.1,
+            'line-opacity': 0.1,
         }
     }, {
         selector: 'node[type="compound"]',
@@ -124,7 +127,7 @@ export const CYTOSCAPE_STYLESHEET = [
             'color': SELECTED_COLOR,
             'target-arrow-color': SELECTED_COLOR,
             'source-arrow-color': SELECTED_COLOR,
-            'z-index': 10000000,
+            'z-index': 2,
         }
     }, {
         selector: 'node[faded="true"]',
@@ -162,7 +165,7 @@ export const CYTOSCAPE_STYLESHEET = [
         css: {
             'background-color': SELECTED_COLOR,
             'color': SELECTED_COLOR,
-            'z-index': 10000000,
+            'z-index': 2,
         }
     }, {
         selector: '.hideLabels',//TODO: Add setting for hiding labels

@@ -31,7 +31,6 @@ export function Histogram(props:Props) {
     const graphData = props.graphData
     const [histogramToggle, setHistogramToggle] = useState(false)
 
-
     const onPlotClick = useCallback((e: any) => {
                 const selected = (e.points[0].customdata as unknown as string[]).map((edgeId: string) => graphData.edgesMap.get(edgeId))
                 setSelectedElements(selected)

@@ -3,4 +3,5 @@ export const enum AnalysisTab {
     FlowAnalysis,
     PatternAnalysis,
     Statistics,
+    Sankey,
 }

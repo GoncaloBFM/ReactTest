@@ -6,13 +6,15 @@ import {useGraphDataManager} from "@/hooks/useGraphDataManager";
 import {useCytoscapeManager} from "@/hooks/useCytoscapeManager";
 import {DataTable} from "@/components/DataTable/DataTable";
 import {useSelectedDataManager} from "@/hooks/useSelectedDataManager";
-import {ToolsTab} from "@/components/DetailTab/ToolsTab";
+import {ToolsTab} from "@/components/ToolsTab/ToolsTab";
 import Divider from "@mui/material/Divider";
 import {BasicAnalysis} from "@/components/BasicAnalysis/BasicAnalysis";
 import {useState} from "react";
 import {FlowAnalysis} from "@/components/FlowAnalysis/FlowAnalysis";
 import {PatternAnalysis} from "@/components/PatternAnalysis/PatternAnalysis";
 import {AnalysisTab} from "@/types/AnalysisTab";
+import {Sankey} from "@/components/Sankey/Sankey";
+import {SankeyAnalysis} from "@/components/SankeyAnalysis/SankeyAnalysis";
 
 
 export default function DashboardLayout() {
@@ -91,6 +93,14 @@ export default function DashboardLayout() {
                                 setShowAnalysisTab={setShowAnalysisTab}
                                 graphData={graphData}>
                             </PatternAnalysis>
+                        </div>
+                    }
+                    {showAnalysisTab == AnalysisTab.Sankey &&
+                        <div className={styles.extendedAnalysis}>
+                            <SankeyAnalysis
+                                selectedDataManager={selectedDataManager}
+                                graphData={graphData}>
+                                </SankeyAnalysis>
                         </div>
                     }
                 </div>

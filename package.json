@@ -27,6 +27,8 @@
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-cxtmenu": "^3.5.0",
     "cytoscape-fcose": "^2.2.0",
+    "d3": "^7.9.0",
+    "d3-sankey": "^0.12.3",
     "dayjs": "^1.11.12",
     "material-react-table": "^3.0.1",
     "next": "14.2.5",
@@ -39,6 +41,8 @@
     "sass": "^1.77.8"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/d3-sankey": "^0.12.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-cytoscapejs": "^1.2.5",

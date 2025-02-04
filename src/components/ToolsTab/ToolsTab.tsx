@@ -23,6 +23,7 @@ import styles from './ToolsTab.module.scss'
 import CachedIcon from '@mui/icons-material/Cached';
 import {GraphData} from "@/types/GraphData";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Divider from '@mui/material/Divider';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import {ElementType} from "@/types/ElementType";
@@ -68,7 +69,7 @@ export function ToolsTab(props: Props) {
         [selectedElements, subSelectedElements])
 
     return (
-        <Stack className={styles.DetailTab} direction="column">
+        <Stack className={styles.ToolsTab} direction="column">
             <Tooltip title="Load neighbors from database" placement="right">
                 <span>
                     <IconButton disabled={data.length == 0 || data[0].elementType == ElementType.edge} onClick={() => {
@@ -122,6 +123,18 @@ export function ToolsTab(props: Props) {
                     }}
                 >
                     <BarChartIcon/>
+                </IconButton>
+                </span>
+            </Tooltip>
+            <Tooltip title="Show timeline" placement="right">
+                <span>
+                <IconButton
+                    color={props.showAnalysisTab == AnalysisTab.Sankey ? 'primary' : 'default'}
+                    onClick={() => {
+                        props.setShowAnalysisTab(props.showAnalysisTab == AnalysisTab.Sankey ? AnalysisTab.None : AnalysisTab.Sankey);
+                    }}
+                >
+                    <AccessTimeIcon/>
                 </IconButton>
                 </span>
             </Tooltip>

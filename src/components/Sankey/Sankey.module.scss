@@ -1,0 +1,16 @@
+.Sankey {
+  width: 100%;
+  padding: 10px;
+  .linkVisualization {
+    overflow-x: scroll;
+  }
+  .nodeLabel {
+    cursor: pointer;
+  }
+  .linkColLabel{
+    cursor: pointer;
+  }
+}
+.TooltipText {
+  font-size: 13px;
+}
