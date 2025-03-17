@@ -13,6 +13,7 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@floating-ui/dom": "^1.6.13",
     "@fontsource/roboto": "^5.0.13",
     "@mui/icons-material": "^6.1.7",
     "@mui/material": "^6.1.7",
@@ -27,6 +28,7 @@
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-cxtmenu": "^3.5.0",
     "cytoscape-fcose": "^2.2.0",
+    "cytoscape-popper": "^4.0.1",
     "d3": "^7.9.0",
     "d3-sankey": "^0.12.3",
     "dayjs": "^1.11.12",

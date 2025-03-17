@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import {linkHorizontal} from "d3-shape";
-import React, {ReactElement, ReactNode, useMemo, useState} from "react";
+import React, {Dispatch, ReactElement, ReactNode, SetStateAction, useMemo, useState} from "react";
 import styles from "@/components/Sankey/Sankey.module.scss";
 import {Box, Grid2, Stack, Tooltip, Typography} from "@mui/material";
 import {GraphData} from "@/types/GraphData";
@@ -10,6 +10,8 @@ import {EdgeType} from "@/types/EdgeType";
 import {TransactionEdge} from "@/types/TransactionEdge";
 import {Overpass_Mono} from "next/dist/compiled/@next/font/dist/google";
 import {MouseTracker} from "@/components/MouseTracker/MouseTracker";
+import {AnalysisTab} from "@/types/AnalysisTab";
+import {CytoscapeManager} from "@/hooks/useCytoscapeManager";
 
 type NodeData = {
     order: number;
@@ -17,78 +19,78 @@ type NodeData = {
 
 const COLORS = d3.schemeDark2;
 
-export const data = {
-    nodes: {
-        'bob': {order:0},
-        'alice': {order:1},
-        'carol': {order:2},
-        'mel': {order:3},
-        'yan': {order:4},
-    } as {[key: string]: NodeData},
-    linkCols: [
-        [
-            { source: "bob", target: "carol", value: 2 },
-            { source: "alice", target: "carol", value: 2 },
-            { source: "alice", target: "yan", value: 2 },
-            { source: "carol", target: "mel", value: 2 },
-            { source: "carol", target: "yan", value: 2 },
-        ],
-        [
-            { source: "bob", target: "carol", value: 2 },
-            { source: "alice", target: "carol", value: 2 },
-            { source: "alice", target: "yan", value: 2 },
-            { source: "carol", target: "mel", value: 2 },
-            { source: "carol", target: "yan", value: 2 },
-        ],
-        [
-
-        ],
-        [
-
-        ],
-        [
-            { source: "bob", target: "carol", value: 2 },
-            { source: "alice", target: "carol", value: 2 },
-            { source: "alice", target: "yan", value: 2 },
-            { source: "carol", target: "mel", value: 2 },
-            { source: "carol", target: "yan", value: 2 },
-        ],
-        [
-            { source: "bob", target: "carol", value: 2 },
-            { source: "alice", target: "carol", value: 2 },
-            { source: "alice", target: "yan", value: 2 },
-            { source: "carol", target: "mel", value: 2 },
-            { source: "carol", target: "yan", value: 2 },
-        ],
-        [
-            { source: "bob", target: "carol", value: 2 },
-            { source: "alice", target: "carol", value: 2 },
-            { source: "alice", target: "yan", value: 2 },
-            { source: "carol", target: "mel", value: 2 },
-            { source: "carol", target: "yan", value: 2 },
-        ],
-        [
-            { source: "bob", target: "carol", value: 2 },
-            { source: "alice", target: "carol", value: 2 },
-            { source: "alice", target: "yan", value: 2 },
-            { source: "carol", target: "mel", value: 2 },
-            { source: "carol", target: "yan", value: 2 },
-        ],
-        [
-            { source: "bob", target: "carol", value: 2 },
-            { source: "alice", target: "carol", value: 2 },
-            { source: "alice", target: "yan", value: 2 },
-            { source: "carol", target: "mel", value: 2 },
-            { source: "carol", target: "yan", value: 2 },
-        ]
-    ]
-}
+// export const data = {
+//     nodes: {
+//         'bob': {order:0},
+//         'alice': {order:1},
+//         'carol': {order:2},
+//         'mel': {order:3},
+//         'yan': {order:4},
+//     } as {[key: string]: NodeData},
+//     linkCols: [
+//         [
+//             { source: "bob", target: "carol", value: 2 },
+//             { source: "alice", target: "carol", value: 2 },
+//             { source: "alice", target: "yan", value: 2 },
+//             { source: "carol", target: "mel", value: 2 },
+//             { source: "carol", target: "yan", value: 2 },
+//         ],
+//         [
+//             { source: "bob", target: "carol", value: 2 },
+//             { source: "alice", target: "carol", value: 2 },
+//             { source: "alice", target: "yan", value: 2 },
+//             { source: "carol", target: "mel", value: 2 },
+//             { source: "carol", target: "yan", value: 2 },
+//         ],
+//         [
+//
+//         ],
+//         [
+//
+//         ],
+//         [
+//             { source: "bob", target: "carol", value: 2 },
+//             { source: "alice", target: "carol", value: 2 },
+//             { source: "alice", target: "yan", value: 2 },
+//             { source: "carol", target: "mel", value: 2 },
+//             { source: "carol", target: "yan", value: 2 },
+//         ],
+//         [
+//             { source: "bob", target: "carol", value: 2 },
+//             { source: "alice", target: "carol", value: 2 },
+//             { source: "alice", target: "yan", value: 2 },
+//             { source: "carol", target: "mel", value: 2 },
+//             { source: "carol", target: "yan", value: 2 },
+//         ],
+//         [
+//             { source: "bob", target: "carol", value: 2 },
+//             { source: "alice", target: "carol", value: 2 },
+//             { source: "alice", target: "yan", value: 2 },
+//             { source: "carol", target: "mel", value: 2 },
+//             { source: "carol", target: "yan", value: 2 },
+//         ],
+//         [
+//             { source: "bob", target: "carol", value: 2 },
+//             { source: "alice", target: "carol", value: 2 },
+//             { source: "alice", target: "yan", value: 2 },
+//             { source: "carol", target: "mel", value: 2 },
+//             { source: "carol", target: "yan", value: 2 },
+//         ],
+//         [
+//             { source: "bob", target: "carol", value: 2 },
+//             { source: "alice", target: "carol", value: 2 },
+//             { source: "alice", target: "yan", value: 2 },
+//             { source: "carol", target: "mel", value: 2 },
+//             { source: "carol", target: "yan", value: 2 },
+//         ]
+//     ]
+// }
 
 const PADDING_TOP = 0
 const PADDING_BOTTOM = 30
-const NODE_LABELS_WIDTH = 50
+const NODE_LABELS_WIDTH = 70
 const NODE_WIDTH= 5
-const NODE_HEIGHT = 10
+const NODE_HEIGHT = 15
 const NODE_VERTICAL_SPACING = 20
 const NODE_HORIZONTAL_SPACING = 130
 const NODE_EMPTY_HORIZONTAL_SPACING = 30
@@ -98,27 +100,39 @@ const FONT_FAMILY = 'monospace'
 const FONT_CHAR_WIDTH = 7.201171875
 const FONT_CHAR_HEIGHT = 14.40234375
 
+export type SankeyLink = {source: string, target:string, amount:number, count: number}
+export type SankeyLinkCol = {label: string, links: SankeyLink[]}
+export type SankeyLinkNodes = {[key: string]: {order: number}}
+
 //https://jsfiddle.net/eNzjZ/34/
 type Props = {
-    data: {nodes: {[key: string]: {order: number}}, linkCols: {source:string, target:string}}
-};
+    nodes: SankeyLinkNodes,
+    linkCols: SankeyLinkCol[]
+    selectedDataManager: SelectedDataManager
+    cytoscapeManager: CytoscapeManager
+    graphData: GraphData
+    setShowAnalysisTab: Dispatch<SetStateAction<AnalysisTab>>
+}
 
-export function Sankey(props: Props) {
+export function Sankey({nodes, linkCols, selectedDataManager, cytoscapeManager, graphData, setShowAnalysisTab}: Props) {
     const [tooltip, setTooltip] = useState<ReactNode | null>(null)
 
     const [nodeLabels, linkVisualization, visWidth, visHeight] = useMemo(() => {
-        const colorMap = Object.fromEntries(Object.keys(data.nodes).map((n, i) => [n, COLORS[i]]))
+        const colorMap = Object.fromEntries(Object.keys(nodes).map((n, i) => [n, COLORS[i]]))
         let prevColSpace = 0
         const linkColLabel = new Array<ReactElement>()
         const allLinks = new Array<ReactElement>()
         const allNodes = new Array<ReactElement>()
-        const nodeCount = Object.values(data.nodes).length
+        const nodeCount = Object.values(nodes).length
 
-        data.linkCols.forEach((linkCol, col) => {
-            linkCol.forEach(link => {
-                const source = data.nodes[link.source]
+        linkCols.forEach((linkCol, col) => {
+            if (linkCol.links.length == 0 && linkCols[col - 1].links.length == 0) {
+                return
+            }
+            linkCol.links.forEach(link => {
+                const source = nodes[link.source]
                 const sourceOrder = source.order
-                const targetOrder = data.nodes[link.target].order
+                const targetOrder = nodes[link.target].order
                 const sourceX = prevColSpace + NODE_WIDTH
                 const sourceY = PADDING_TOP + NODE_HEIGHT * sourceOrder + sourceOrder * NODE_VERTICAL_SPACING + LINK_THICKNESS / 2
                 const targetX = prevColSpace + NODE_HORIZONTAL_SPACING + NODE_WIDTH
@@ -136,7 +150,7 @@ export function Sankey(props: Props) {
                         strokeWidth={LINK_THICKNESS}
                         onMouseEnter={e => {
                             d3.select(`#${id}`).attr('stroke-opacity', 0.5)
-                            setTooltip(<Stack><div className={styles.TooltipText}>Count: 23</div><div className={styles.TooltipText}>Total: 10000$</div></Stack>)
+                            setTooltip(<Stack><div className={styles.TooltipText}>Count: {link.count}</div><div className={styles.TooltipText}>Total: {link.amount.toFixed(2)} USD</div></Stack>)
                         }}
                         onMouseLeave={e => {
                             d3.select(`#${id}`).attr('stroke-opacity', 0.2)
@@ -149,11 +163,11 @@ export function Sankey(props: Props) {
                 )
             })
 
-            if (linkCol.length > 0) {
+            if (linkCol.links.length > 0) {
                 linkColLabel.push(
                     <text
                         key={col}
-                        x={prevColSpace + NODE_HORIZONTAL_SPACING / 2 - (FONT_CHAR_WIDTH * '10/12/1993'.length) / 2}
+                        x={prevColSpace + NODE_HORIZONTAL_SPACING / 2 - (FONT_CHAR_WIDTH * '10/Sep/2003'.length) / 2}
                         y={PADDING_TOP + NODE_HEIGHT * nodeCount + nodeCount * NODE_VERTICAL_SPACING}
                         fontFamily={FONT_FAMILY}
                         fontSize={FONT_SIZE}
@@ -161,11 +175,11 @@ export function Sankey(props: Props) {
                         onClick={e => {
                             console.log(col)
                         }}
-                    >{'10/12/1993'}</text>
+                    >{linkCol.label}</text>
                 )
             }
 
-            Object.entries(data.nodes).forEach(([nodeId, nodeData]) => {
+            Object.entries(nodes).forEach(([nodeId, nodeData]) => {
                 allNodes.push(
                     <rect
                         key={nodeId + col.toString()}
@@ -179,13 +193,13 @@ export function Sankey(props: Props) {
                 )
             });
 
-            prevColSpace += linkCol.length > 0 ? NODE_HORIZONTAL_SPACING + NODE_WIDTH : NODE_EMPTY_HORIZONTAL_SPACING + NODE_WIDTH
+            prevColSpace += linkCol.links.length > 0 ? NODE_HORIZONTAL_SPACING + NODE_WIDTH : NODE_EMPTY_HORIZONTAL_SPACING + NODE_WIDTH
         });
 
-        Object.entries(data.nodes).forEach(([nodeId, nodeData]) => {
+        Object.entries(nodes).forEach(([nodeId, nodeData]) => {
             allNodes.push(
                 <rect
-                    key={nodeId + data.linkCols.length.toString()}
+                    key={nodeId + linkCols.length.toString()}
                     height={NODE_HEIGHT}
                     width={NODE_WIDTH}
                     x={prevColSpace}
@@ -199,25 +213,29 @@ export function Sankey(props: Props) {
 
 
         const nodeLabels = new Array<ReactElement>()
-        Object.entries(data.nodes).forEach(([nodeId, {order}]) => {
+        Object.entries(nodes).forEach(([nodeId, {order}]) => {
             nodeLabels.push(
                 <text
                     key={nodeId}
                     x={0}
+                    onMouseEnter={()=> {cytoscapeManager.addElementHighlight(nodeId)}}
+                    onMouseLeave={() => {cytoscapeManager.removeElementHighlight(nodeId)}}
+                    onClick={()=>{
+                        cytoscapeManager.removeElementHighlight(nodeId)
+                        selectedDataManager.setSelectedElements([graphData.nodesMap.get(nodeId)])
+                        setShowAnalysisTab(AnalysisTab.Statistics)
+                    }}
                     fontSize={FONT_SIZE}
                     fontFamily={FONT_FAMILY}
                     y={PADDING_TOP + NODE_HEIGHT * order + order * NODE_VERTICAL_SPACING + NODE_HEIGHT / 2 + FONT_CHAR_HEIGHT / 2 - 2}
                     className={styles.nodeLabel}
-                    onClick={e => {
-                        console.log(nodeId)
-                    }}
                 >{nodeId}
                 </text>
             )
         });
 
         const dashedLines = new Array<ReactElement>()
-        Object.entries(data.nodes).forEach(([nodeId, {order}]) => {
+        Object.entries(nodes).forEach(([nodeId, {order}]) => {
             const x1 = NODE_WIDTH
             const y = PADDING_TOP + NODE_HEIGHT * order + order * NODE_VERTICAL_SPACING + NODE_HEIGHT / 2
             dashedLines.push(
@@ -234,10 +252,10 @@ export function Sankey(props: Props) {
             )
         });
 
-        const visHeight = (NODE_VERTICAL_SPACING + NODE_HEIGHT) * Object.values(data.nodes).length + PADDING_TOP + PADDING_BOTTOM
+        const visHeight = (NODE_VERTICAL_SPACING + NODE_HEIGHT) * Object.values(nodes).length + PADDING_TOP + PADDING_BOTTOM
         const linkVisualization = allNodes.concat(allLinks).concat(dashedLines).concat(linkColLabel)
         return [nodeLabels, linkVisualization, prevColSpace, visHeight]
-    }, []);
+    }, [cytoscapeManager, selectedDataManager, linkCols, nodes]);
 
 
     return (

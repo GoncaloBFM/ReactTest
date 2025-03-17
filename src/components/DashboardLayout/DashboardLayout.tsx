@@ -21,13 +21,17 @@ export default function DashboardLayout() {
     const [showAnalysisTab, setShowAnalysisTab] = useState<AnalysisTab>(AnalysisTab.None);
     const [hideLabels, setHideLabels] = useState(false)
     const [dimElements, setDimElements] = useState(false);
+    const [pieNodes, setPieNodes] = useState(false);
 
     const {graphData, graphManager, isLoading} = useGraphDataManager(
         () => {
             cytoscapeManager.rerunLayoutAfterRender()
             setHideLabels(false)
+            setPieNodes(false)
         },
-        ()=> {selectedDataManager.setSelectedElements([])}
+        ()=> {
+            selectedDataManager.setSelectedElements([])
+        }
     )
     const selectedDataManager = useSelectedDataManager(
         () => {}
@@ -51,6 +55,8 @@ export default function DashboardLayout() {
                         <GraphVisualization
                             dimElements={dimElements}
                             setDimElements={setDimElements}
+                            pieNodes={pieNodes}
+                            setPieNodes={setPieNodes}
                             cytoscapeManager={cytoscapeManager}
                             hideLabels={hideLabels}
                             setHideLabels={setHideLabels}
@@ -98,6 +104,8 @@ export default function DashboardLayout() {
                     {showAnalysisTab == AnalysisTab.Sankey &&
                         <div className={styles.extendedAnalysis}>
                             <SankeyAnalysis
+                                cytoscapeManager={cytoscapeManager}
+                                setShowAnalysisTab={setShowAnalysisTab}
                                 selectedDataManager={selectedDataManager}
                                 graphData={graphData}>
                                 </SankeyAnalysis>

@@ -8,9 +8,10 @@ import COSEBilkent from 'cytoscape-cose-bilkent';
 import cola from 'cytoscape-cola';
 // @ts-ignore
 import fcose from 'cytoscape-fcose';
+import cytoscapePopper, {PopperInstance} from 'cytoscape-popper';
 // @ts-ignore
 import {CYTOSCAPE_STYLESHEET} from './CytoscapeStylesheet';
-import {CytoscapeManager} from '@/hooks/useCytoscapeManager';
+import {CytoscapeManager, useCytoscapeManager} from '@/hooks/useCytoscapeManager';
 import {GraphData} from "@/types/GraphData";
 import {GraphNode, NodeMetadata} from "@/types/GraphNode";
 import {GraphEdge} from "@/types/GraphEdge";
@@ -26,8 +27,8 @@ import compoundDragAndDrop from 'cytoscape-compound-drag-and-drop';
 import {SelectedDataManager} from "@/hooks/useSelectedDataManager";
 import {CompanyNode} from "@/types/CompanyNode";
 import {useSafeState} from "react-query/types/devtools/utils";
+import {SafeMap} from "@/utils/SafeMap";
 
-//cytoscape.use(COSEBilkent);
 cytoscape.use( fcose );
 
 type Props = {
@@ -38,20 +39,29 @@ type Props = {
     setHideLabels: Dispatch<SetStateAction<boolean>>
     dimElements: boolean
     setDimElements: Dispatch<SetStateAction<boolean>>
+    pieNodes: boolean
+    setPieNodes: Dispatch<SetStateAction<boolean>>
 };
+
+type NodePieValuesType = {
+    in: SafeMap<string, number>
+    out: SafeMap<string, number>
+}
 
 const EDGE_ID_SEPARATOR= '_'
 
 export function GraphVisualization(props: Props) {
 
     const cy = props.cytoscapeManager.cy;
+    const cytoscapeManager =props.cytoscapeManager;
     const setSelectedElements = props.selectedDataManager.setSelectedElements;
     const selectedElements = props.selectedDataManager.selectedElements;
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
     const hideLabels = props.hideLabels
     const setHideLabels = props.setHideLabels
     const dimElements = props.dimElements
-    const setDimElements = props.setDimElements
+    const setPieNodes = props.setPieNodes
+    const pieNodes = props.pieNodes
 
     //TODO: Add feature for box selection and multiple node dragging
     useEffect(() => {
@@ -125,10 +135,28 @@ export function GraphVisualization(props: Props) {
             stale.off('mouseout', '*', mouseOutHandler)
             //stale.off('unselect', '*', unselectHandler);
         }
-    }, [cy, setSelectedElements, selectedElements, props.graphData, subSelectedElements, dimElements])
+    }, [cy, setSelectedElements, cytoscapeManager.poppers, selectedElements, props.graphData, subSelectedElements, dimElements])
 
-    const aggregateTransactionEdge = useCallback((edgesGroup: Array<TransactionEdge>, subSelectedIds: Set<string>) => {
-        const amount = edgesGroup.reduce((amount, edge) => amount = amount + edge.amountPaid, 0)
+    const aggregateTransactionEdge = useCallback((edgesGroup: Array<TransactionEdge>, subSelectedIds: Set<string>, nodePieValues:NodePieValuesType|undefined) => {
+        const amount = edgesGroup.reduce((amount, edge) => {
+
+            if (nodePieValues != undefined) {
+                if (!nodePieValues.out.has(edge.source)) {
+                    nodePieValues.out.set(edge.source, edge.amountPaid)
+                } else {
+                    nodePieValues.out.set(edge.source, nodePieValues.out.get(edge.source) + edge.amountPaid)
+                }
+
+                if (!nodePieValues.in.has(edge.target)) {
+                    nodePieValues.in.set(edge.target, edge.amountPaid)
+                } else {
+                    nodePieValues.in.set(edge.target, nodePieValues.in.get(edge.target) + edge.amountPaid)
+
+                }
+            }
+
+            return amount + edge.amountPaid
+        }, 0)
         const label = `( ${amount.toFixed(2)} USD | ${edgesGroup.length} )`
         const ids = edgesGroup.map(edge => edge.id)
 
@@ -156,25 +184,45 @@ export function GraphVisualization(props: Props) {
     }, [cy, hideLabels]);
 
     useEffect(() => {
+        if (pieNodes) {
+            cy?.nodes().addClass('pieNode')
+        } else {
+            cy?.nodes().removeClass('pieNode')
+        }
+    }, [cy, pieNodes]);
+
+    useEffect(() => {
         const handleKeyDown = (e:any) => {
             if (e.repeat) return; // Do nothing
             if (e.key == 'l' || e.key == 'L') {
                 setHideLabels(!hideLabels)
             }
-            // if (e.key == 'd' || e.key == 'D') {
-            //     setDimElements(!dimElements)
-            // }
+            if (e.key == 'p' || e.key == 'P') {
+                setPieNodes(!pieNodes)
+            }
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
 
-    }, [cy, setHideLabels, hideLabels]);
+    }, [cy, setHideLabels, hideLabels, setPieNodes, pieNodes]);
 
+    const calculatePie = (nodeId: string, nodePieValues: NodePieValuesType | undefined) => {
+        if (nodePieValues != undefined) {
+            const inValue = nodePieValues.in.has(nodeId) ? nodePieValues.in.get(nodeId) : 0
+            const outValue = nodePieValues.out.has(nodeId) ? nodePieValues.out.get(nodeId) : 0
+            if (inValue == 0 && outValue == 0) {
+                return {pieIn: 0, pieOut: 0, noPie: 100}
+            }
+            const outPercentage = (outValue / (inValue + outValue)) * 100
+            console.log(nodeId, outPercentage,inValue , outValue)
+            return {pieIn: 100 - outPercentage, pieOut: outPercentage, noPie: 0}
+        }
+        return {pieOut: null, pieIn: null, noPie: null}
+    }
 
-
-    const generateCytoscapeEdges = useCallback((edges: Array<GraphEdge>, subSelectedIds: Set<string>) => {
+    const generateCytoscapeEdges = useCallback((edges: Array<GraphEdge>, subSelectedIds: Set<string>, nodePieValues: NodePieValuesType | undefined) => {
         let cytoscapeTransactionEdges = new Array<any>
         let cytoscapeConnectionEdges = new Array<any>
         const edgesByType = Object.groupBy(edges, ({type}) => type);
@@ -184,7 +232,7 @@ export function GraphVisualization(props: Props) {
                                                                                  source,
                                                                                  target
                                                                              }) => `${source},${target}`);
-            cytoscapeTransactionEdges = (Object.values(transactionsByNodePair) as Array<Array<TransactionEdge>>).map(edge => aggregateTransactionEdge(edge, subSelectedIds))
+            cytoscapeTransactionEdges = (Object.values(transactionsByNodePair) as Array<Array<TransactionEdge>>).map(edge => aggregateTransactionEdge(edge, subSelectedIds, nodePieValues))
         }
         const connectionEdges = edgesByType[EdgeType.connection] as Array<ConnectionEdge>
         if (connectionEdges) {
@@ -222,10 +270,11 @@ export function GraphVisualization(props: Props) {
         cy?.endBatch()
     }, [cy, selectedElements]) //TODO: move selected to GraphElement class, update / clear it on setSelected
 
-    const generateCytoscapeNodes = useCallback((nodes: Array<GraphNode>, subSelectedIds: Set<string>) => {
+    const generateCytoscapeNodes = useCallback((nodes: Array<GraphNode>, subSelectedIds: Set<string>, nodePieValues: NodePieValuesType | undefined) => {
         const cytoscapeNodes = nodes.map(node => {
             const faded = subSelectedIds.size == 0 || subSelectedIds.has(node.id) ? 'false' : 'true'
-            const baseData = {
+
+            const baseData = Object.assign({
                 id: node.id,
                 graphIds: [node.id],
                 type: node.type,
@@ -233,7 +282,7 @@ export function GraphVisualization(props: Props) {
                 expanded: node.expanded ? 'true' : 'false',
                 faded: faded,
                 parent: props.cytoscapeManager.groupByCountry ? (node as any).nationality : undefined
-            }
+            }, calculatePie(node.id, nodePieValues))
 
             if (node.type == NodeType.person)
                 return {data: Object.assign(baseData, {name: (node as PersonNode).name})}
@@ -258,16 +307,17 @@ export function GraphVisualization(props: Props) {
 
     const cytoscapeGraph = useMemo(() => {
         const subSelectedIds = new Set(subSelectedElements.map(e => e.id))
+        const nodePieValues = pieNodes ? {out: new SafeMap<string, number>(), in: new SafeMap<string, number>()} : undefined
+        const edges = generateCytoscapeEdges(props.graphData.edgesList, subSelectedIds, nodePieValues)
+        const nodes = generateCytoscapeNodes(props.graphData.nodesList, subSelectedIds, nodePieValues)
         return [
-            ...generateCytoscapeNodes(props.graphData.nodesList, subSelectedIds),
-            ...generateCytoscapeEdges(props.graphData.edgesList, subSelectedIds)
+            ...nodes, ...edges
         ]
-    }, [props.graphData, generateCytoscapeEdges, generateCytoscapeNodes, subSelectedElements]);
+    }, [props.graphData, generateCytoscapeEdges, generateCytoscapeNodes, subSelectedElements, pieNodes]);
 
     return <>
         <CytoscapeComponent
             elements={cytoscapeGraph}
-            layout={props.cytoscapeManager.layout}
             className={styles.GraphVisualization}
             cy={(cy) => {
                 props.cytoscapeManager.setCy(cy)

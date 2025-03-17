@@ -1,24 +1,23 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import cytoscape from "cytoscape";
+import {PopperInstance} from "cytoscape-popper";
 
 export type CytoscapeManager = ReturnType<typeof useCytoscapeManager>;
 
-export const CyLayouts = {
-    COSE_LAYOUT: {name: 'fcose'},
-} as const;
-
-type CyLayoutValue = (typeof CyLayouts)[keyof typeof CyLayouts];
-
 export function useCytoscapeManager() {
-    const [layout, setLayout] = useState<CyLayoutValue>(CyLayouts.COSE_LAYOUT);
     const [layoutStateCounter, setLayoutStateCounter] = useState(0)
     const [cy, setCy] = useState<cytoscape.Core | null>(null);
     const [groupByCountry, setGroupByCountry] = useState(false)
+    const [poppers, setPoppers] = useState<Array<PopperInstance>>([])
 
-
-
-    const runLayout = useCallback((layout: CyLayoutValue) => {
-        cy?.layout(layout).run();
+    const runLayout = useCallback(() => {
+        cy?.layout({
+            name:'fcose',
+            quality: "default",
+            nodeDimensionsIncludeLabels: false,
+            nodeRepulsion: (node: any) => 6000,
+            idealEdgeLength: (edge: any) => 90
+        } as any).run();
     }, [cy])
 
     const addElementHighlight = useCallback((elementId: string) => {
@@ -30,8 +29,8 @@ export function useCytoscapeManager() {
     }, [cy])
 
     const rerunLayout = useCallback(() => {
-        runLayout(layout)
-    }, [runLayout, layout])
+        runLayout()
+    }, [runLayout])
 
     const rerunLayoutAfterRender = useCallback(() => {
         setLayoutStateCounter((prev) => prev + 1)
@@ -61,11 +60,10 @@ export function useCytoscapeManager() {
             cy?.endBatch()
             setGroupByCountry(set)
         }, [cy]),
-        setLayout: setLayout,
         rerunLayout: rerunLayout,
         rerunLayoutAfterRender: rerunLayoutAfterRender,
-        layout: layout,
         groupByCountry,
+        poppers,
         addElementHighlight,
         removeElementHighlight
     } as const;

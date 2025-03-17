@@ -43,16 +43,6 @@ export const CYTOSCAPE_STYLESHEET = [
             'z-index': 1,
         }
     }, {
-        selector: '.dimmedElement',
-        style: {
-            'z-index': 0,
-            'text-opacity': 0,
-            'background-opacity': 0,
-            'border-opacity': 0.1,
-            'background-image-opacity': 0.1,
-            'line-opacity': 0.1,
-        }
-    }, {
         selector: 'node[type="compound"]',
         style: {
             'background-color': '#f3f3f3',
@@ -146,6 +136,34 @@ export const CYTOSCAPE_STYLESHEET = [
             'underlay-color': HIGHLIGHTED_COLOR
         }
     },{
+        selector: '.pieNode',
+        style: {
+            'background-image': null,
+            'pie-size': '80%',
+            'pie-1-background-color': '#4ed720',
+            'pie-1-background-size': 'data(pieIn)',
+            'pie-1-background-opacity': 1,
+            'pie-2-background-color': '#d72020',
+            'pie-2-background-size': 'data(pieOut)',
+            'pie-2-background-opacity': 1,
+            'pie-3-background-color': '#989898',
+            'pie-3-background-size': 'data(noPie)',
+            'pie-3-background-opacity': 1,
+        }
+    }, {
+    selector: '.dimmedElement',
+        style: {
+            'z-index': 0,
+            'text-opacity': 0,
+            'background-opacity': 0,
+            'border-opacity': 0.1,
+            'background-image-opacity': 0.1,
+            'line-opacity': 0.1,
+            'pie-1-background-opacity': 0.1,
+            'pie-2-background-opacity': 0.1,
+            'pie-3-background-opacity': 0.1,
+        }
+    }, {
         selector: 'node[faded="true"]',
         style: {
             'text-opacity': 0.2,
