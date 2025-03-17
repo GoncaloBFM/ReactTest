@@ -39,11 +39,11 @@ type Props = {
     setHideLabels: Dispatch<SetStateAction<boolean>>
     dimElements: boolean
     setDimElements: Dispatch<SetStateAction<boolean>>
-    pieNodes: boolean
-    setPieNodes: Dispatch<SetStateAction<boolean>>
+    showFlow: boolean
+    setShowFlow: Dispatch<SetStateAction<boolean>>
 };
 
-type NodePieValuesType = {
+type FlowValues = {
     in: SafeMap<string, number>
     out: SafeMap<string, number>
 }
@@ -60,8 +60,8 @@ export function GraphVisualization(props: Props) {
     const hideLabels = props.hideLabels
     const setHideLabels = props.setHideLabels
     const dimElements = props.dimElements
-    const setPieNodes = props.setPieNodes
-    const pieNodes = props.pieNodes
+    const setShowFlow = props.setShowFlow
+    const showFlow = props.showFlow
 
     //TODO: Add feature for box selection and multiple node dragging
     useEffect(() => {
@@ -123,6 +123,7 @@ export function GraphVisualization(props: Props) {
             }
         }
 
+
         stale.on('mouseover', '*', mouseInHandler)
         stale.on('mouseout', '*', mouseOutHandler)
         stale.on('click', '*', clickHandler);
@@ -137,24 +138,21 @@ export function GraphVisualization(props: Props) {
         }
     }, [cy, setSelectedElements, cytoscapeManager.poppers, selectedElements, props.graphData, subSelectedElements, dimElements])
 
-    const aggregateTransactionEdge = useCallback((edgesGroup: Array<TransactionEdge>, subSelectedIds: Set<string>, nodePieValues:NodePieValuesType|undefined) => {
+    const aggregateTransactionEdge = useCallback((edgesGroup: Array<TransactionEdge>, subSelectedIds: Set<string>, flowValues:FlowValues|undefined) => {
         const amount = edgesGroup.reduce((amount, edge) => {
-
-            if (nodePieValues != undefined) {
-                if (!nodePieValues.out.has(edge.source)) {
-                    nodePieValues.out.set(edge.source, edge.amountPaid)
+            if (flowValues != undefined) {
+                if (!flowValues.out.has(edge.source)) {
+                    flowValues.out.set(edge.source, edge.amountPaid)
                 } else {
-                    nodePieValues.out.set(edge.source, nodePieValues.out.get(edge.source) + edge.amountPaid)
+                    flowValues.out.set(edge.source, flowValues.out.get(edge.source) + edge.amountPaid)
                 }
 
-                if (!nodePieValues.in.has(edge.target)) {
-                    nodePieValues.in.set(edge.target, edge.amountPaid)
+                if (!flowValues.in.has(edge.target)) {
+                    flowValues.in.set(edge.target, edge.amountPaid)
                 } else {
-                    nodePieValues.in.set(edge.target, nodePieValues.in.get(edge.target) + edge.amountPaid)
-
+                    flowValues.in.set(edge.target, flowValues.in.get(edge.target) + edge.amountPaid)
                 }
             }
-
             return amount + edge.amountPaid
         }, 0)
         const label = `( ${amount.toFixed(2)} USD | ${edgesGroup.length} )`
@@ -170,7 +168,8 @@ export function GraphVisualization(props: Props) {
                 elementType: ElementType.edge,
                 label: label,
                 amountPaid: amount,
-                graphIds: ids
+                graphIds: ids,
+                opacity:1
             }
         }
     }, [])
@@ -184,12 +183,12 @@ export function GraphVisualization(props: Props) {
     }, [cy, hideLabels]);
 
     useEffect(() => {
-        if (pieNodes) {
-            cy?.nodes().addClass('pieNode')
+        if (showFlow) {
+            cy?.elements().addClass('showFlow')
         } else {
-            cy?.nodes().removeClass('pieNode')
+            cy?.elements().removeClass('showFlow')
         }
-    }, [cy, pieNodes]);
+    }, [cy, showFlow]);
 
     useEffect(() => {
         const handleKeyDown = (e:any) => {
@@ -198,7 +197,7 @@ export function GraphVisualization(props: Props) {
                 setHideLabels(!hideLabels)
             }
             if (e.key == 'p' || e.key == 'P') {
-                setPieNodes(!pieNodes)
+                setShowFlow(!showFlow)
             }
         };
         document.addEventListener('keydown', handleKeyDown);
@@ -206,23 +205,22 @@ export function GraphVisualization(props: Props) {
             document.removeEventListener('keydown', handleKeyDown);
         };
 
-    }, [cy, setHideLabels, hideLabels, setPieNodes, pieNodes]);
+    }, [cy, setHideLabels, hideLabels, setShowFlow, showFlow]);
 
-    const calculatePie = (nodeId: string, nodePieValues: NodePieValuesType | undefined) => {
+    const calculateFlow = (nodeId: string, nodePieValues: FlowValues | undefined, maxFlow: number) => {
         if (nodePieValues != undefined) {
             const inValue = nodePieValues.in.has(nodeId) ? nodePieValues.in.get(nodeId) : 0
             const outValue = nodePieValues.out.has(nodeId) ? nodePieValues.out.get(nodeId) : 0
             if (inValue == 0 && outValue == 0) {
-                return {pieIn: 0, pieOut: 0, noPie: 100}
+                return {pieIn: 0, pieOut: 0, noPie: 100, opacity: .05}
             }
             const outPercentage = (outValue / (inValue + outValue)) * 100
-            console.log(nodeId, outPercentage,inValue , outValue)
-            return {pieIn: 100 - outPercentage, pieOut: outPercentage, noPie: 0}
+            return {pieIn: 100 - outPercentage, pieOut: outPercentage, noPie: 0, opacity: Math.max(0.05, (inValue + outValue) / maxFlow)}
         }
-        return {pieOut: null, pieIn: null, noPie: null}
+        return {}
     }
 
-    const generateCytoscapeEdges = useCallback((edges: Array<GraphEdge>, subSelectedIds: Set<string>, nodePieValues: NodePieValuesType | undefined) => {
+    const generateCytoscapeEdges = useCallback((edges: Array<GraphEdge>, subSelectedIds: Set<string>, nodePieValues: FlowValues | undefined) => {
         let cytoscapeTransactionEdges = new Array<any>
         let cytoscapeConnectionEdges = new Array<any>
         const edgesByType = Object.groupBy(edges, ({type}) => type);
@@ -233,6 +231,15 @@ export function GraphVisualization(props: Props) {
                                                                                  target
                                                                              }) => `${source},${target}`);
             cytoscapeTransactionEdges = (Object.values(transactionsByNodePair) as Array<Array<TransactionEdge>>).map(edge => aggregateTransactionEdge(edge, subSelectedIds, nodePieValues))
+
+            if (showFlow) {
+                const maxEdge = cytoscapeTransactionEdges.reduce((previousValue, edge) => {
+                    return Math.max(previousValue, edge.data.amountPaid)
+                }, 0)
+                cytoscapeTransactionEdges.forEach(edge => {
+                    edge.data.opacity = Math.max(0.05, edge.data.amountPaid / maxEdge)
+                })
+            }
         }
         const connectionEdges = edgesByType[EdgeType.connection] as Array<ConnectionEdge>
         if (connectionEdges) {
@@ -243,6 +250,7 @@ export function GraphVisualization(props: Props) {
                         source: edge.source,
                         target: edge.target,
                         name: edge.name,
+                        opacity: 0.05,
                         type: EdgeType.connection,
                         faded: subSelectedIds.size == 0 || subSelectedIds.has(edge.id) ? 'false' : 'true',
                         elementType: ElementType.edge,
@@ -254,7 +262,7 @@ export function GraphVisualization(props: Props) {
 
         return [...cytoscapeTransactionEdges, ...cytoscapeConnectionEdges]
 
-    }, [aggregateTransactionEdge])
+    }, [aggregateTransactionEdge, showFlow])
 
     useEffect(() => {
         cy?.startBatch()
@@ -270,7 +278,18 @@ export function GraphVisualization(props: Props) {
         cy?.endBatch()
     }, [cy, selectedElements]) //TODO: move selected to GraphElement class, update / clear it on setSelected
 
-    const generateCytoscapeNodes = useCallback((nodes: Array<GraphNode>, subSelectedIds: Set<string>, nodePieValues: NodePieValuesType | undefined) => {
+    const generateCytoscapeNodes = useCallback((nodes: Array<GraphNode>, subSelectedIds: Set<string>, flowValues: FlowValues | undefined) => {
+        const maxFlow = flowValues == undefined ? 0 : nodes.reduce((previousValue, node) => {
+            let total = 0
+            if (flowValues.in.has(node.id)) {
+                total += flowValues.in.get(node.id)
+            }
+            if (flowValues.out.has(node.id)) {
+                total += flowValues.out.get(node.id)
+            }
+            return Math.max(previousValue, total)
+        }, 0)
+
         const cytoscapeNodes = nodes.map(node => {
             const faded = subSelectedIds.size == 0 || subSelectedIds.has(node.id) ? 'false' : 'true'
 
@@ -282,7 +301,7 @@ export function GraphVisualization(props: Props) {
                 expanded: node.expanded ? 'true' : 'false',
                 faded: faded,
                 parent: props.cytoscapeManager.groupByCountry ? (node as any).nationality : undefined
-            }, calculatePie(node.id, nodePieValues))
+            }, calculateFlow(node.id, flowValues, maxFlow))
 
             if (node.type == NodeType.person)
                 return {data: Object.assign(baseData, {name: (node as PersonNode).name})}
@@ -307,13 +326,13 @@ export function GraphVisualization(props: Props) {
 
     const cytoscapeGraph = useMemo(() => {
         const subSelectedIds = new Set(subSelectedElements.map(e => e.id))
-        const nodePieValues = pieNodes ? {out: new SafeMap<string, number>(), in: new SafeMap<string, number>()} : undefined
-        const edges = generateCytoscapeEdges(props.graphData.edgesList, subSelectedIds, nodePieValues)
-        const nodes = generateCytoscapeNodes(props.graphData.nodesList, subSelectedIds, nodePieValues)
+        const flowValues = showFlow ? {out: new SafeMap<string, number>(), in: new SafeMap<string, number>()} : undefined
+        const edges = generateCytoscapeEdges(props.graphData.edgesList, subSelectedIds, flowValues)
+        const nodes = generateCytoscapeNodes(props.graphData.nodesList, subSelectedIds, flowValues)
         return [
             ...nodes, ...edges
         ]
-    }, [props.graphData, generateCytoscapeEdges, generateCytoscapeNodes, subSelectedElements, pieNodes]);
+    }, [props.graphData, generateCytoscapeEdges, generateCytoscapeNodes, subSelectedElements, showFlow]);
 
     return <>
         <CytoscapeComponent

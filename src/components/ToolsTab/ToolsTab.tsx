@@ -39,6 +39,7 @@ import {CytoscapeManager} from "@/hooks/useCytoscapeManager";
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import RouteIcon from '@mui/icons-material/Route';
 import {AttachMoney, CallSplit} from "@mui/icons-material";
+import JoinFullIcon from '@mui/icons-material/JoinFull';
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
 import {LoadDataPopup} from "@/components/LoadDataPopup/LoadDataPopup";
 import {AnalysisTab} from "@/types/AnalysisTab";
@@ -84,13 +85,25 @@ export function ToolsTab(props: Props) {
                 <IconButton
                     disabled={data.length != 1}
                     onClick={() => {
-                        setOpenShowDataPopup(true)
+
                     }}
                 >
-                    <LoupeOutlinedIcon/>
+                    <JoinFullIcon/>
                 </IconButton>
                 </span>
             </Tooltip>
+            {/*<Tooltip title="Show data" placement="right">*/}
+            {/*    <span>*/}
+            {/*    <IconButton*/}
+            {/*        disabled={data.length != 1}*/}
+            {/*        onClick={() => {*/}
+            {/*            setOpenShowDataPopup(true)*/}
+            {/*        }}*/}
+            {/*    >*/}
+            {/*        <LoupeOutlinedIcon/>*/}
+            {/*    </IconButton>*/}
+            {/*    </span>*/}
+            {/*</Tooltip>*/}
             <Divider/>
             <Tooltip title="Pattern analysis" placement="right">
                 <span>

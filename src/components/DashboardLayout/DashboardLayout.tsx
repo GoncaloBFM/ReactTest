@@ -55,8 +55,8 @@ export default function DashboardLayout() {
                         <GraphVisualization
                             dimElements={dimElements}
                             setDimElements={setDimElements}
-                            pieNodes={pieNodes}
-                            setPieNodes={setPieNodes}
+                            showFlow={pieNodes}
+                            setShowFlow={setPieNodes}
                             cytoscapeManager={cytoscapeManager}
                             hideLabels={hideLabels}
                             setHideLabels={setHideLabels}

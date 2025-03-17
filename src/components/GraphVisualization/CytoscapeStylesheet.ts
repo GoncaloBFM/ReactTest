@@ -120,14 +120,6 @@ export const CYTOSCAPE_STYLESHEET = [
             'z-index': 2,
         }
     }, {
-        selector: 'node[faded="true"]',
-        style: {
-            'text-opacity': 0.2,
-            'background-opacity': 0.2,
-            'border-opacity': 0.2,
-            'background-image-opacity': 0.2
-        }
-    }, {
         selector: '.manualEdgeHighlight',
         css: {
             'underlay-shape': 'ellipse',
@@ -136,19 +128,23 @@ export const CYTOSCAPE_STYLESHEET = [
             'underlay-color': HIGHLIGHTED_COLOR
         }
     },{
-        selector: '.pieNode',
+        selector: '.showFlow',
         style: {
             'background-image': null,
             'pie-size': '80%',
             'pie-1-background-color': '#4ed720',
             'pie-1-background-size': 'data(pieIn)',
-            'pie-1-background-opacity': 1,
+            'pie-1-background-opacity': 'data(opacity)',
             'pie-2-background-color': '#d72020',
             'pie-2-background-size': 'data(pieOut)',
-            'pie-2-background-opacity': 1,
+            'pie-2-background-opacity': 'data(opacity)',
             'pie-3-background-color': '#989898',
             'pie-3-background-size': 'data(noPie)',
-            'pie-3-background-opacity': 1,
+            'pie-3-background-opacity': 'data(opacity)',
+            'background-opacity': 'data(opacity)',
+            'border-opacity': 'data(opacity)',
+            'background-image-opacity': 'data(opacity)',
+            'line-opacity': 'data(opacity)',
         }
     }, {
     selector: '.dimmedElement',
