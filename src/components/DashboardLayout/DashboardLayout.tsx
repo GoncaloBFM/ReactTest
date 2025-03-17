@@ -21,13 +21,13 @@ export default function DashboardLayout() {
     const [showAnalysisTab, setShowAnalysisTab] = useState<AnalysisTab>(AnalysisTab.None);
     const [hideLabels, setHideLabels] = useState(false)
     const [dimElements, setDimElements] = useState(false);
-    const [pieNodes, setPieNodes] = useState(false);
+    const [showFlow, setShowFlow] = useState(false);
 
     const {graphData, graphManager, isLoading} = useGraphDataManager(
         () => {
             cytoscapeManager.rerunLayoutAfterRender()
             setHideLabels(false)
-            setPieNodes(false)
+            setShowFlow(false)
         },
         ()=> {
             selectedDataManager.setSelectedElements([])
@@ -47,6 +47,8 @@ export default function DashboardLayout() {
                                  setHideLabels={setHideLabels}
                                  dimElements={dimElements}
                                  setDimElements={setDimElements}
+                                 showFlow={showFlow}
+                                 setShowFlow={setShowFlow}
                                  selectedDataManager={selectedDataManager}
                                  cytoscapeManager={cytoscapeManager}></DashboardHeader></div>
             <div className={styles.visualizations}>
@@ -55,8 +57,8 @@ export default function DashboardLayout() {
                         <GraphVisualization
                             dimElements={dimElements}
                             setDimElements={setDimElements}
-                            showFlow={pieNodes}
-                            setShowFlow={setPieNodes}
+                            showFlow={showFlow}
+                            setShowFlow={setShowFlow}
                             cytoscapeManager={cytoscapeManager}
                             hideLabels={hideLabels}
                             setHideLabels={setHideLabels}

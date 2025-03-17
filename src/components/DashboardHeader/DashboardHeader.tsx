@@ -41,6 +41,8 @@ type Props = {
     selectedDataManager: SelectedDataManager
     dimElements: boolean
     setDimElements: Dispatch<SetStateAction<boolean>>
+    showFlow: boolean
+    setShowFlow: Dispatch<SetStateAction<boolean>>
 };
 
 export function DashboardHeader(props: Props) {
@@ -139,7 +141,19 @@ export function DashboardHeader(props: Props) {
                         </Select>
                         </Stack>
                         <Stack>
-                            {/*TODO: turning feature off and on breaks graphs*/}
+                            Highlight money flow <Select size="small"
+                                                            onChange={e => {
+                                                                const result = e.target.value == 'Yes'
+                                                                props.setShowFlow(result)
+                                                            }}
+                                                            value={props.showFlow ? 'Yes' : 'No'}
+                                                            inputProps={{ size:'small' }}
+                        >
+                            <MenuItem value={'Yes'}>Yes</MenuItem>
+                            <MenuItem value={'No'}>No</MenuItem>
+                        </Select>
+                        </Stack>
+                        <Stack>
                             Group by country: <Select size="small"
                                                       onChange={(e)=>{
                                                           props.cytoscapeManager.setGroupByCountry(e.target.value == 'Yes')
