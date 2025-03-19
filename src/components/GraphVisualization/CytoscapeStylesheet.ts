@@ -175,10 +175,16 @@ export const CYTOSCAPE_STYLESHEET = [
             'line-opacity': 0.2,
         }
     }, {
-        selector: '.manualNodeSelect',
+        selector: '.manualNodeSelect[type!="compound"]',
         css: {
             'background-color': SELECTED_COLOR,
             'color': SELECTED_COLOR,
+            'z-index': 2,
+        }
+    }, {
+        selector: '.manualNodeSelect[type="compound"]',
+        css: {
+            'border-color': SELECTED_COLOR,
             'z-index': 2,
         }
     }, {

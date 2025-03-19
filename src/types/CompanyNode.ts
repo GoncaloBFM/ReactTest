@@ -1,17 +1,17 @@
 import {GraphNode} from "@/types/GraphNode";
 import {ElementType} from "@/types/ElementType";
 import {NodeType} from "@/types/NodeType";
+import {CompoundNode} from "@/types/CompoundNode";
 
 export class CompanyNode implements GraphNode {
     id: string;
     data: {[key:string]: string};
     type: (typeof NodeType)[keyof typeof NodeType];
     elementType: (typeof ElementType)[keyof typeof ElementType]
-    expanded:boolean;
-    hidden:false;
     name: string
     nationality:string
     address:string
+    parent: CompoundNode | undefined;
 
     constructor(id: string, name: string, nationality:string, address:string, data: {[key:string]: string}) {
         this.id = id
@@ -21,8 +21,7 @@ export class CompanyNode implements GraphNode {
         this.nationality = nationality
         this.address = address
         this.data = data
-        this.expanded = false;
-        this.hidden = false
+        this.parent = undefined
     }
 
 }

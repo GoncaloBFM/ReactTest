@@ -66,6 +66,7 @@ const EDGE_COLUMNS = ELEMENT_COLUMNS.concat([{
 
 const EDGE_COLUMNS_W_TYPE = EDGE_COLUMNS.concat([EDGE_TYPE_COLUMN])
 
+const NODE_COMPOUND_COLUMN = NODE_COLUMNS.concat([])
 const NODE_PERSON_COLUMNS = NODE_COLUMNS.concat([{
     id: 'name',
     accessorKey: 'name',
@@ -165,6 +166,7 @@ export const TABLE_COLUMNS = {
     [NodeType.person]: NODE_PERSON_COLUMNS,
     [NodeType.account]: NODE_ACCOUNT_COLUMNS,
     [NodeType.company]: NODE_COMPANY_COLUMNS,
+    [NodeType.compound]: NODE_COMPOUND_COLUMN,
     [EdgeType.connection]: EDGE_CONNECTION_COLUMNS,
     [EdgeType.transaction]: EDGE_TRANSACTION_COLUMNS,
     [ElementType.node]: NODE_COLUMNS_W_TYPE,

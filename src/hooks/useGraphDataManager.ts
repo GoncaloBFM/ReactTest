@@ -12,6 +12,7 @@ import {GraphData} from "@/types/GraphData";
 import {bifurcateBy} from "@/utils/array";
 import {CompanyNode} from "@/types/CompanyNode";
 import {parseRawEdge, parseRawNode} from "@/utils/responseParser";
+import {CompoundNode} from "@/types/CompoundNode";
 
 export type GraphManager = {
     expandNodeData: (nodeIds: Array<string>, callback?: (wasRemoved: boolean) => void) => void,
@@ -20,6 +21,7 @@ export type GraphManager = {
     loadGraphData: (nodeIds: Array<string>) => void,
     removeEdgeData: (nodeIds: Array<string>) => void
     addToGraph: (nodes: GraphNode[], edges: GraphEdge[]) => void
+    compound: (nodeIds: Array<string>) => void,
 }
 
 export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDataRemoved: () => void) {
@@ -34,7 +36,6 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
             const [rawNeighborNodes, rawNeighborEdges] = await response.json();
             const newNeighborNodes = rawNeighborNodes.map(parseRawNode)
             const newNeighborEdges = rawNeighborEdges.map(parseRawEdge)
-            nodeIds.forEach(n => graphData.nodesMap.get(n).expanded= true)
             const newNodes = graphData.nodesList.concat(newNeighborNodes.filter((n:GraphNode) => !graphData.nodesMap.has(n.id)))
             const newEdges = graphData.edgesList.concat(newNeighborEdges.filter((e:GraphEdge) => !graphData.edgesMap.has(e.id)))
             setGraphData(new GraphData(newNodes, newEdges))
@@ -71,25 +72,52 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
 
     const removeNodeData = (nodeIds: Array<string>) => {
         const [newEdges, removedEdges] = bifurcateBy(graphData.edgesList, (edge) => !nodeIds.some(nodeId => nodeId == edge.source || nodeId == edge.target))
-        removedEdges.forEach(e => {
-            graphData.nodesMap.get(e.source).expanded = false
-            graphData.nodesMap.get(e.target).expanded = false
+        nodeIds.forEach(nodeId => {
+            const node = graphData.nodesMap.get(nodeId)
+            if (node.type == NodeType.compound) {
+                const compNode = node as CompoundNode
+                compNode.nodeList.map(childNodeId => graphData.nodesMap.delete(childNodeId))
+            }
+            graphData.nodesMap.delete(nodeId)
         })
-        nodeIds.forEach(nodeId => graphData.nodesMap.delete(nodeId))
         setGraphData(new GraphData(graphData.nodesMap, newEdges))
         afterGraphDataRemoved() //TODO: only call this when stuff was removed
     };
 
     const removeEdgeData = (edgeIds: Array<string>) => {
-        edgeIds.forEach(edgeId => {
-            const edge = graphData.edgesMap.get(edgeId)
-            graphData.nodesMap.get(edge.source).expanded = false
-            graphData.nodesMap.get(edge.target).expanded = false
-        })
         edgeIds.forEach(edgeId => graphData.edgesMap.delete(edgeId))
         setGraphData(new GraphData(graphData.nodesMap, graphData.edgesMap))
         afterGraphDataRemoved()
     };
+
+    const compound = (nodeIds:string[]) => {
+        const edgesToReplace = graphData.edgesList.filter(edge => nodeIds.includes(edge.target) !== nodeIds.includes(edge.source))
+        const compNode = new CompoundNode(nodeIds, edgesToReplace)
+        edgesToReplace.forEach(e => {
+            const newEdge = structuredClone(e)
+            nodeIds.forEach(nodeId => {
+                if (newEdge.source == nodeId) {
+                    newEdge.source = compNode.id
+                    return
+                } else if (newEdge.target == nodeId) {
+                    newEdge.target = compNode.id
+                    return
+                }
+            })
+            graphData.edgesMap.set(newEdge.id, newEdge)
+        })
+        graphData.nodesMap.set(compNode.id, compNode)
+        nodeIds.forEach(nodeId => graphData.nodesMap.get(nodeId).parent = compNode)
+        setGraphData(new GraphData(graphData.nodesMap, graphData.edgesMap))
+    }
+
+    // const decompound = (nodeId: string) => {
+    //     const compNode = graphData.nodesMap.get(nodeId) as CompoundNode
+    //     compNode.nodeList.forEach(childNodeId => {graphData.nodesMap.get(childNodeId).parent = undefined})
+    //     compNode.oldEdges.forEach(oldEdge => {graphData.edgesMap.set(oldEdge.id, oldEdge)})
+    //     graphData.nodesMap.delete(compNode.id)
+    //     setGraphData(new GraphData(graphData.nodesMap, graphData.edgesMap))
+    // }
 
     const addToGraph = useCallback((nodes: GraphNode[], edges: GraphEdge[]) => {
         const newNodes = graphData.nodesList.concat(nodes.filter((n:GraphNode) => !graphData.nodesMap.has(n.id)))
@@ -119,7 +147,8 @@ export function useGraphDataManager(afterGraphDataAdded: ()=>void, afterGraphDat
             removeNodeData,
             loadGraphData,
             removeEdgeData,
-            addToGraph
+            addToGraph,
+            compound,
         },
         graphData,
         isLoading

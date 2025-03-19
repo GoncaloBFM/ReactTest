@@ -13,7 +13,6 @@ export class ConnectionEdge implements GraphEdge {
     type: (typeof EdgeType)[keyof typeof EdgeType];
     elementType: (typeof ElementType)[keyof typeof ElementType];
     name: string;
-    hidden:false;
 
     constructor(source: string, target: string, id: string, name: string, data: {[key:string]: string}) {
         this.source = source
@@ -23,6 +22,5 @@ export class ConnectionEdge implements GraphEdge {
         this.name = name
         this.type = EdgeType.connection
         this.elementType = ElementType.edge
-        this.hidden = false
     }
 }

@@ -43,6 +43,7 @@ import JoinFullIcon from '@mui/icons-material/JoinFull';
 import {TABLE_COLUMNS} from "@/app/defaultTableColumns";
 import {LoadDataPopup} from "@/components/LoadDataPopup/LoadDataPopup";
 import {AnalysisTab} from "@/types/AnalysisTab";
+import {NodeType} from "@/types/NodeType";
 
 type Props = {
     selectedDataManager: SelectedDataManager
@@ -56,10 +57,8 @@ type Props = {
 export function ToolsTab(props: Props) {
     const [isLoadDataPopupOpen, setLoadDataPopupOpen] = useState(false);
     const [openDeleteGraphPopup, setOpenDeleteGraphPopup] = useState(false);
-    const [openNoDataPopup, setOpenNoDataPopup] = useState(false);
-    const [openShowDataPopup, setOpenShowDataPopup] = useState(false);
-    const [openPatternAnalysisPopup, setOpenPatternAnalysisPopup] = useState(false);
-    const [numberNodesInPath, setNumberNodesInPath] = useState(4);
+    const [openNoDataPopup, setOpenNoDataPopup] = useState<{open:boolean, title:string}>({open:false, title:''});
+    // const [openShowDataPopup, setOpenShowDataPopup] = useState(false);
     const subSelectedElements = props.selectedDataManager.subSelectedElements;
     const selectedElements = props.selectedDataManager.selectedElements;
     const setSelectedElements = props.selectedDataManager.setSelectedElements;
@@ -80,12 +79,23 @@ export function ToolsTab(props: Props) {
                     </IconButton>
                 </span>
             </Tooltip>
-            <Tooltip title="Show data" placement="right">
+            <Tooltip title="Group nodes" placement="right">
                 <span>
                 <IconButton
-                    disabled={data.length != 1}
+                    disabled={data.length <= 1 || data[0].elementType != ElementType.node}
                     onClick={() => {
-
+                        const nodes = (data as GraphNode[])
+                        for (let i = 0; i < nodes.length; i++){
+                            const node = nodes[i];
+                            if (node.parent != undefined) {
+                                setOpenNoDataPopup({open:true, title:'Selected node is already in group'})
+                                return;
+                            } else if (node.type == NodeType.compound){
+                                setOpenNoDataPopup({open:true, title:'Selected node is compound'})
+                                return;
+                            }
+                        }
+                        props.graphManager.compound(nodes.map(node => node.id))
                     }}
                 >
                     <JoinFullIcon/>
@@ -159,18 +169,17 @@ export function ToolsTab(props: Props) {
                         const nodeIds = data.map(e => e.id)
                         const result = props.graphData.edgesList.filter(e => nodeIds.includes(e.source) || nodeIds.includes(e.target))
                         if (result.length == 0) {
-                            setOpenNoDataPopup(true)
+                            setOpenNoDataPopup({open:true, title:'No data to select'})
                             return
                         }
                         setSelectedElements(result)
-                        //TODO: ^ this is slow, improve performance
                     } else {
                         const edges = data as GraphEdge[]
                         const neighbors = edges.reduce((prev:GraphNode[], edge: GraphEdge) =>
                                 prev.concat([props.graphData.nodesMap.get(edge.source), props.graphData.nodesMap.get(edge.target)])
                             , [])
                         if (neighbors.length == 0) {
-                            setOpenNoDataPopup(true)
+                            setOpenNoDataPopup({open:true, title:'No data to select'})
                             return
                         }
                         setSelectedElements(neighbors)
@@ -186,7 +195,7 @@ export function ToolsTab(props: Props) {
                     const nodeIds = data.map(e => e.id)
                     const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && (nodeIds.includes(e.source) || nodeIds.includes(e.target)))
                     if (result.length == 0) {
-                        setOpenNoDataPopup(true)
+                        setOpenNoDataPopup({open:true, title:'No data to select'})
                         return
                     }
                     setSelectedElements(result)
@@ -202,7 +211,7 @@ export function ToolsTab(props: Props) {
                     const nodeIds = data.map(e => e.id)
                     const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.source))
                     if (result.length == 0) {
-                        setOpenNoDataPopup(true)
+                        setOpenNoDataPopup({open:true, title:'No data to select'})
                         return
                     }
                     setSelectedElements(result)
@@ -218,7 +227,7 @@ export function ToolsTab(props: Props) {
                     const nodeIds = data.map(e => e.id)
                     const result = props.graphData.edgesList.filter(e => e.type == EdgeType.transaction && nodeIds.includes(e.target))
                     if (result.length == 0) {
-                        setOpenNoDataPopup(true)
+                        setOpenNoDataPopup({open:true, title:'No data to select'})
                         return
                     }
                     setSelectedElements(result)
@@ -252,7 +261,16 @@ export function ToolsTab(props: Props) {
                     if (data.length == 0) {
                         setOpenDeleteGraphPopup(true)
                     } else if (data[0].elementType == ElementType.node) {
+                        const nodes = data as GraphNode[]
+                        for (let i = 0; i < nodes.length; i++){
+                            const node = nodes[i];
+                            if (node.parent != undefined) {
+                                setOpenNoDataPopup({open:true, title:'Cant delete nodes in groups'})
+                                return;
+                            }
+                        }
                         props.graphManager.removeNodeData(data.map(e => e.id))
+                        //TODO remove child nodes from compound node
                     } else {
                         props.graphManager.removeEdgeData(data.map(e => e.id))
                     }
@@ -286,73 +304,39 @@ export function ToolsTab(props: Props) {
                     <Button onClick={() => setOpenDeleteGraphPopup(false)} autoFocus>Cancel</Button>
                 </DialogActions>
             </Dialog>
+            {/*<Dialog*/}
+            {/*    open={openShowDataPopup}*/}
+            {/*    onClose={() => setOpenShowDataPopup(false)}*/}
+            {/*>*/}
+            {/*    <DialogTitle>*/}
+            {/*        Element details*/}
+            {/*    </DialogTitle>*/}
+            {/*    <DialogContent className={styles.showDataPopup}>*/}
+            {/*        {data.length == 1 &&*/}
+            {/*            <List dense={false}>*/}
+            {/*                {*/}
+            {/*                    TABLE_COLUMNS[data[0].type].map(info =>*/}
+            {/*                        <ListItem key={info.id}><ListItemText secondary={info.header} primary={(data[0] as Record<string, any>)[(info.accessorKey == 'timestamp' ? 'timestampRepresentation' : info.accessorKey)]}></ListItemText></ListItem>*/}
+            {/*                    )*/}
+            {/*                }*/}
+            {/*            </List>*/}
+            {/*        }*/}
+            {/*    </DialogContent>*/}
+            {/*    <DialogActions>*/}
+            {/*        <Button onClick={() => setOpenShowDataPopup(false)} autoFocus>*/}
+            {/*            Close*/}
+            {/*        </Button>*/}
+            {/*    </DialogActions>*/}
+            {/*</Dialog>*/}
             <Dialog
-                open={openShowDataPopup}
-                onClose={() => setOpenShowDataPopup(false)}
+                open={openNoDataPopup.open}
+                onClose={() => setOpenNoDataPopup({open:false, title:''})}
             >
                 <DialogTitle>
-                    Element details
-                </DialogTitle>
-                <DialogContent className={styles.showDataPopup}>
-                    {data.length == 1 &&
-                        <List dense={false}>
-                            {
-                                TABLE_COLUMNS[data[0].type].map(info =>
-                                    <ListItem key={info.id}><ListItemText secondary={info.header} primary={(data[0] as Record<string, any>)[(info.accessorKey == 'timestamp' ? 'timestampRepresentation' : info.accessorKey)]}></ListItemText></ListItem>
-                                )
-                            }
-                        </List>
-                    }
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenShowDataPopup(false)} autoFocus>
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Dialog
-                open={openNoDataPopup}
-                onClose={() => setOpenNoDataPopup(false)}
-            >
-                <DialogTitle>
-                    No data found
+                    {openNoDataPopup.title}
                 </DialogTitle>
                 <DialogActions>
-                    <Button onClick={() => setOpenNoDataPopup(false)} autoFocus>
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Dialog
-                open={openPatternAnalysisPopup}
-                onClose={() => setOpenPatternAnalysisPopup(false)}
-            >
-                <DialogTitle>
-                    Path length
-                </DialogTitle>
-                <DialogContent>
-                    <Stack spacing={2}>
-                    <Typography>Select the maximum length of the paths to load from the database</Typography>
-                      <Select
-                          size={'small'}
-                          value={numberNodesInPath}
-                          onChange={(event) => {setNumberNodesInPath(event.target.value as number)}}
-                      >
-                          <MenuItem value={1}>One node</MenuItem>
-                          <MenuItem value={2}>Two nodes</MenuItem>
-                          <MenuItem value={3}>Three nodes</MenuItem>
-                          <MenuItem value={4}>Four nodes</MenuItem>
-                      </Select>
-                    </Stack>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => {
-                        props.graphManager.loadPathData(data[0].id, data[1].id, numberNodesInPath)
-                        setOpenPatternAnalysisPopup(false)
-                    }}>
-                        Confirm
-                    </Button>
-                    <Button onClick={() => setOpenPatternAnalysisPopup(false)}>
+                    <Button onClick={() => setOpenNoDataPopup({open:false, title:''})} autoFocus>
                         Close
                     </Button>
                 </DialogActions>

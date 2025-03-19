@@ -1,10 +1,13 @@
 import {GraphNode} from "@/types/GraphNode";
 import {GraphEdge} from "@/types/GraphEdge";
 import {SafeMap} from "@/utils/SafeMap";
+import {bifurcateBy} from "@/utils/array";
+import {CompoundNode} from "@/types/CompoundNode";
 
 export class GraphData {
     readonly nodesMap: SafeMap<string, GraphNode>
     readonly edgesMap: SafeMap<string, GraphEdge>
+
     constructor(nodes: Array<GraphNode> | SafeMap<string, GraphNode>, edges: Array<GraphEdge> | SafeMap<string, GraphEdge>) {
         if (nodes instanceof Array) {
             this.nodesMap = new SafeMap(nodes.map(n => [n.id, n]))

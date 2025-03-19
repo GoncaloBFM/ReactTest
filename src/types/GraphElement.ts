@@ -8,5 +8,4 @@ export interface GraphElement {
     data: {[key:string]: string}
     elementType: (typeof ElementType)[keyof typeof ElementType]
     type: (typeof EdgeType)[keyof typeof EdgeType] | (typeof NodeType)[keyof typeof NodeType];
-    hidden: boolean
 }

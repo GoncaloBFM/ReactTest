@@ -1,5 +1,6 @@
 export const NodeType = {
     person: 'person',
     company: 'company',
-    account: 'account'
+    account: 'account',
+    compound: 'compound',
 } as const

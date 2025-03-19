@@ -109,7 +109,7 @@ export function GraphVisualization(props: Props) {
             const cytoscapeData = cytoscapeElement.data()
             const type = cytoscapeElement.isNode() ? ElementType.node : ElementType.edge
             const elements = type == ElementType.node ? props.graphData.nodesMap : props.graphData.edgesMap
-            const toSelectIds = ((cytoscapeData.type == 'compound') ? cytoscapeElement.children().map((e: any) => e.id()) : cytoscapeData['graphIds']) as string []
+            const toSelectIds = cytoscapeData['graphIds'] as string []
             const toSelect = toSelectIds.map(elementId => elements.get(elementId))
 
             if (e.originalEvent.shiftKey && selectedElements.length > 0 && selectedElements[0].elementType == type) {
@@ -292,15 +292,15 @@ export function GraphVisualization(props: Props) {
 
         const cytoscapeNodes = nodes.map(node => {
             const faded = subSelectedIds.size == 0 || subSelectedIds.has(node.id) ? 'false' : 'true'
-
+            console.log(node.parent)
             const baseData = Object.assign({
                 id: node.id,
                 graphIds: [node.id],
                 type: node.type,
                 elementType: ElementType.node,
-                expanded: node.expanded ? 'true' : 'false',
                 faded: faded,
-                parent: props.cytoscapeManager.groupByCountry ? (node as any).nationality : undefined
+                parent: node.parent?.id
+                // parent: props.cytoscapeManager.groupByCountry ? (node as any).nationality : undefined
             }, calculateFlow(node.id, flowValues, maxFlow))
 
             if (node.type == NodeType.person)
@@ -309,20 +309,22 @@ export function GraphVisualization(props: Props) {
                 return {data: baseData}
             else if (node.type == NodeType.company) {
                 return {data: Object.assign(baseData, {name: (node as CompanyNode).name})}
+            } else if (node.type == NodeType.compound) {
+                return {data: baseData}
             }
             else
                 throw new Error(`Unknown node type ${node.type}`)
         })
 
-        if (props.cytoscapeManager.groupByCountry) {
-            new Set(nodes.map((n: any)=> n.nationality)).forEach(e => {
-                if (e != undefined) {
-                    cytoscapeNodes.push({data: {id: e, type: 'compound'}} as any)
-                }
-            })
-        }
+        // if (props.cytoscapeManager.groupByCountry) {
+        //     new Set(nodes.map((n: any)=> n.nationality)).forEach(e => {
+        //         if (e != undefined) {
+        //             cytoscapeNodes.push({data: {id: e, type: 'compound'}} as any)
+        //         }
+        //     })
+        // }
         return cytoscapeNodes
-    }, [props.cytoscapeManager.groupByCountry])
+    }, [])
 
     const cytoscapeGraph = useMemo(() => {
         const subSelectedIds = new Set(subSelectedElements.map(e => e.id))
